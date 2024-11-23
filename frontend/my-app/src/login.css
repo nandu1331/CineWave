@@ -1,0 +1,124 @@
+/* src/login.css */
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("https://wallpapers.com/images/hd/netflix-background-gs7hjuwvv2g0e9fj.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.login-form {
+  background-color: rgba(0, 0, 0, 0.75);
+  padding: 60px 68px 40px;
+  border-radius: 4px;
+  min-width: 380px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  color: #8c8c8c;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  transition: 0.2s ease-in-out;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 4px;
+  border: none;
+  background-color: #333;
+  color: white;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  background-color: #454545;
+  outline: none;
+  border-bottom: 2px solid #e50914;
+}
+
+.form-group label:focus-within {
+  color: #e50914;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  background-color: #e50914;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #f40612;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.error-message {
+  color: #e87c03;
+  margin-bottom: 16px;
+  padding: 10px;
+  background-color: rgba(232, 124, 3, 0.1);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-footer {
+  margin-top: 16px;
+  text-align: center;
+  color: #737373;
+  font-size: 14px;
+}
+
+.form-footer a {
+  color: white;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Add animation for form appearance */
+@keyframes formAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-form {
+  animation: formAppear 0.3s ease-out forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .login-form {
+    min-width: 300px;
+    padding: 40px 28px 20px;
+  }
+}
