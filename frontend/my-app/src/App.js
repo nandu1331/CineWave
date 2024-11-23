@@ -22,10 +22,11 @@ export default function App() {
                             <Navbar />
                             <Banner />
                             <Row title="Now Playing" fetchUrl={requests.fetchNowPlaying} isBig={true} />
-                            <Row title="Popular" fetchUrl={requests.fetchPopular} />         
-                            <Row title="Top-Rated" fetchUrl={requests.fetchToprated} />
-                            <Row title="Upcoming" fetchUrl={requests.fetchUpcoming} />
-                            <Row title="Anime" fetchUrl={requests.fetchAnime} />
+                            <Row title="Popular" fetchUrl={requests.fetchPopular} media_type={'Any'}/>         
+                            <Row title="Top-Rated" fetchUrl={requests.fetchToprated} media_type={'Any'}/>
+                            <Row title="Upcoming" fetchUrl={requests.fetchUpcoming} media_type={'Any'}/>
+                            <Row title="Anime" fetchUrl={requests.fetchAnime} media_type={'Anime'}/>
+                            <Row title="Tv shows" fetchUrl={requests.fetchTvShows} media_type={'TV'}/>
                         </div>
                     </ProtectedRoute>
                 } />

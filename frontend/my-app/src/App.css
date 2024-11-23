@@ -8,6 +8,7 @@
 
 .app {
   background: #111;
+  background-size: cover;
 }
 
 .App-logo {

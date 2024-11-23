@@ -2,26 +2,17 @@ import React from "react";
 import tmdbAxios from "axios";
 import requests from "../requests";
 import { djangoAxios } from "../axios";
+import { useState } from "react";
+import ShimmerBanner from "./shimmerComps/shimmerBanner";
 
 export default function Banner() {
     const [movie, setMovie] = React.useState(null);  // It's better to set null initially
+    const [loading, setLoading] = useState(true);
     const baseImgUrl = "https://image.tmdb.org/t/p/original/";
     const apikey = process.env.REACT_APP_API_KEY
 
-
-            // In any React component
-const testAPI = async () => {
-    try {
-        const response = await djangoAxios.get('test/');
-        console.log(response.data); // Should show {"message": "API is working!"}
-    } catch (error) {
-        console.error('API test failed:', error);
-    }
-};
-
-testAPI();
-
     React.useEffect(() => {
+        setLoading(true);
         const url = `https://api.themoviedb.org/3/${requests.fetchPopular}`;
         tmdbAxios
             .get(url, {
@@ -33,12 +24,17 @@ testAPI();
             .then(res => {
                 // Select a random movie
                 const randomMovie = res.data.results[Math.floor(Math.random() * res.data.results.length)];
-                setMovie(randomMovie);  // Update the state with the movie data
+                setMovie(randomMovie);
+                setLoading(false); // Update the state with the movie data
             })
             .catch(err => console.error("Error fetching data:", err));  // Always handle errors
-    }, []);
+        }, []);
 
     const imageUrl = `${baseImgUrl}${movie?.backdrop_path}`
+
+    if (loading) {
+    return <ShimmerBanner />
+  }
 
     // If movie data is available, render it; otherwise, show a loading state
     return (
