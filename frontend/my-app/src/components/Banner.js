@@ -8,6 +8,7 @@ import ShimmerBanner from "./shimmerComps/shimmerBanner";
 export default function Banner() {
     const [movie, setMovie] = React.useState(null);  // It's better to set null initially
     const [loading, setLoading] = useState(true);
+    const [trailer, setTrailer] = useState(null);
     const baseImgUrl = "https://image.tmdb.org/t/p/original/";
     const apikey = process.env.REACT_APP_API_KEY
 
@@ -35,6 +36,8 @@ export default function Banner() {
     if (loading) {
     return <ShimmerBanner />
   }
+
+    
 
     // If movie data is available, render it; otherwise, show a loading state
     return (

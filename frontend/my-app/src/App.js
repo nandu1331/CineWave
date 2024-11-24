@@ -8,7 +8,8 @@ import requests from './requests';
 import Register from './components/register';
 import BrowseContent from './components/BrowseContent';
 import MyList from './components/MyList';
-import MovieDetails from './components/MovieDetails';
+import MovieDetails from './components/MovieDetailsCardComps/MovieDetailsCard';
+import MovieDetailsCard from './components/MovieDetailsCardComps/MovieDetailsCard';
 
 export default function App() {
     return (
@@ -21,10 +22,10 @@ export default function App() {
                         <div className="app">
                             <Navbar />
                             <Banner />
-                            <Row title="Now Playing" fetchUrl={requests.fetchNowPlaying} isBig={true} />
-                            <Row title="Popular" fetchUrl={requests.fetchPopular} media_type={'Any'}/>         
-                            <Row title="Top-Rated" fetchUrl={requests.fetchToprated} media_type={'Any'}/>
-                            <Row title="Upcoming" fetchUrl={requests.fetchUpcoming} media_type={'Any'}/>
+                            <Row title="Now Playing" fetchUrl={requests.fetchNowPlaying} isBig={true} media_type={'Movie'}/>
+                            <Row title="Popular" fetchUrl={requests.fetchPopular} media_type={'Movie'}/>         
+                            <Row title="Top-Rated" fetchUrl={requests.fetchToprated} media_type={'Movie'}/>
+                            <Row title="Upcoming" fetchUrl={requests.fetchUpcoming} media_type={'Movie'}/>
                             <Row title="Anime" fetchUrl={requests.fetchAnime} media_type={'Anime'}/>
                             <Row title="Tv shows" fetchUrl={requests.fetchTvShows} media_type={'TV'}/>
                         </div>
@@ -44,11 +45,6 @@ export default function App() {
                             <Navbar />
                             <MyList />
                         </div>
-                    </ProtectedRoute>
-                } />
-                <Route path={`/movie/:id`} element={
-                    <ProtectedRoute>
-                        <MovieDetails />
                     </ProtectedRoute>
                 } />
             </Routes>
