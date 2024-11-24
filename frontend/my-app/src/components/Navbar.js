@@ -3,6 +3,8 @@ import NavLinks from "./Navbar-components/NavLinks";
 import SearchBar from "./Navbar-components/SearchBar";
 import { useNavigate } from "react-router-dom";
 import { djangoAxios } from "../axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDoorOpen, faSignOut } from "@fortawesome/free-solid-svg-icons";
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -93,28 +95,23 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Links */}
-            <div className="hidden lg:flex flex-row items-center gap-8 justify-between">
+            <div className="hidden lg:flex flex-row items-center gap-5 justify-between">
                 <NavLinks />
             </div>
 
             {/* Search Bar */}
-            <div className="flex flex-row gap-12">
-            <SearchBar isMobile={isMobileMenuOpen}/> 
-            <div className="flex flex-row gap-3 items-center">
+            <div className="flex flex-row gap-10 items-center align-middle">
+            <SearchBar isMobile={isMobileMenuOpen} /> 
+            <div className="flex flex-row gap-7 items-center align-middle mr-12">
                 {username && (
                     <>
-                        <span className="text-white text-sm hover:text-gray-300 transition-colors duration-200">
-                            Welcome, {username}
+                        <span className="text-white capitalize text-xl hover:text-gray-300 transition-colors duration-200">
+                            {username}
                         </span>
-                        <button 
-                            onClick={handleLogout}
-                            className="bg-transparent mb-5 hover:bg-[#e50914] text-white text-sm
-                                    border border-white hover:border-transparent
-                                    rounded px-2 py-1 transition-all duration-200
-                                    hover:scale-105"
-                            >
-                            Logout
-                        </button>
+                        <FontAwesomeIcon 
+                            icon={faSignOut}
+                            className="text-white text-4xl hover:text-red-600 hover:scale-125 transition-all duration-200 cursor-pointer"
+                        />
                     </>
                 )}
             </div>
@@ -123,7 +120,7 @@ export default function Navbar() {
 
             {/* Mobile Menu (Hidden by default on large screens, shown when isMobileMenuOpen is true) */}
             <div
-                className={`lg:hidden absolute top-16 left-0 w-full bg-black bg-opacity-90 flex flex-col justify-center ${
+                className={`lg:hidden absolute top-16 p-3 left-0 w-full bg-black bg-opacity-90 flex flex-col justify-center ${
                     isMobileMenuOpen ? "block" : "hidden"
                 }`}
             >

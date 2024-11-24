@@ -5,11 +5,14 @@ import { djangoAxios, tmdbAxios } from '../axios';
 import YouTube from 'react-youtube';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faCheck, faStar } from "@fortawesome/free-solid-svg-icons";
+import ShimmerBrowseContent from './shimmerComps/shimmerBrowseContent';
+import ShimmerImage from './shimmerComps/shimmerImage';
 
 export default function BrowseContent() {
     const navigate = useNavigate();
     const [content, setContent] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadedImages, setLoadedImages] = useState({});
     const [error, setError] = useState(null);
     const [trailerUrl, setTrailerUrl] = useState('');
     const [addedItems, setAddedItems] = useState({});
@@ -52,7 +55,7 @@ export default function BrowseContent() {
                 console.error('Error:', error);
             } finally {
                 setLoading(false);
-            }
+             }
         };
 
         fetchContent();
@@ -60,6 +63,13 @@ export default function BrowseContent() {
 
     const handleItemClick = (item) => {
         navigate(`movie/${item.id}`);
+    };
+
+    const handleImageLoad = (itemId) => {
+        setLoadedImages(prev => ({
+            ...prev,
+            [itemId]: true
+        }));
     };
 
     useEffect(() => {
@@ -105,9 +115,9 @@ export default function BrowseContent() {
 
 
     if (loading) {
-        return <div className="h-screen flex items-center justify-center">
-            <div className="text-white text-2xl">Loading...</div>
-        </div>;
+        return (
+            <ShimmerBrowseContent />
+        )
     }
 
     if (error) {
@@ -122,19 +132,28 @@ export default function BrowseContent() {
                 <h1 className="text-3xl font-bold text-white mb-8 capitalize">
                     {category || 'Movies'}
                 </h1>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pb-10">
                     {content.map((item) => (
                         <div 
                             key={item.id} 
                             className="relative group cursor-pointer"
                             onClick={() => handleItemClick(item)}
                         >
-                            <img
-                                src={`${baseImgUrl}${item.poster_path}`}
-                                alt={item.title || item.name}
-                                className="w-full rounded-lg scale-95 transition-transform duration-300 group-hover:scale-100"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className='relative'>
+                                {!loadedImages[item.id] && <ShimmerImage />}
+                                <img
+                                    className={`w-full h-auto rounded-md scale-95 group-hover:scale-100 transition-all duration-300 ease-in-out
+                                    ${loadedImages[item.id] ? 'opacity-100' : 'opacity-0'}`}
+                                    src={`${baseImgUrl}${item.poster_path}`}
+                                    alt={item.title || item.name}
+                                    onLoad={() => handleImageLoad(item.id)}
+                                    style={{
+                                        minHeight: '230px',
+                                        objectFit: 'cover'
+                                    }}
+                                />
+                            </div>
+                            <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t  from-black opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
                             <h3 className="text-white text-lg font-semibold">
                                 {item.title || item.name}
                             </h3>

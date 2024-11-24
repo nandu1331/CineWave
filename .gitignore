@@ -18,6 +18,7 @@ frontend/my-app/firebase.json/
 
 # misc
 .DS_Store
+frontend/my-app/.env
 .env.local
 .env.development.local
 .env.test.local

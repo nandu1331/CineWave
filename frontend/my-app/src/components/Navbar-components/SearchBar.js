@@ -26,7 +26,7 @@ export default function SearchBar({ isMobile }) {
     };
 
     return (
-        <div className="relative flex items-center">
+        <div className="relative flex-row items-center ">
             <div className={`
                 flex 
                 items-center 
@@ -65,6 +65,7 @@ export default function SearchBar({ isMobile }) {
                         absolute 
                         left-3 
                         top-1/2 
+                        text-xl
                         transform 
                         -translate-y-1/2
                         text-gray-400
@@ -75,7 +76,7 @@ export default function SearchBar({ isMobile }) {
                     `}
                 />
                 {/* Add clear button */}
-                {isSearchOpen && searchValue && (
+                {isSearchOpen && (
                     <FontAwesomeIcon
                         icon={faTimes}
                         onClick={handleClear}
