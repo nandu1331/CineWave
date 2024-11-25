@@ -15,6 +15,7 @@ export default function Register() {
         }
     );
     const [error, setError] = React.useState("");
+    const [msg, setMsg] = React.useState("");
 
     const handleChange = (e) => {
         setFormData({
@@ -39,6 +40,7 @@ export default function Register() {
         });
         
         console.log('Registration successful:', response.data);
+        setMsg('Registration successful');
         navigate('/login');
     } catch (error) {
         console.error('Registration Error:', error);
@@ -62,6 +64,7 @@ export default function Register() {
             <form onSubmit={handleSubmit} className="login-form">
                 <h2>Create Account</h2>
                 {error && <div className="error-message">{error}</div>}
+                {msg && <div className="success-message">{msg}</div>}
 
                 <div className="form-group">
                     <label htmlFor="username">User Name</label>

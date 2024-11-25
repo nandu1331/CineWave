@@ -43,7 +43,7 @@ export default function Banner() {
         >
             <div className="flex flex-col justify-between gap-10 mx-14 pb-20 pt-40 align-middle">
                 <h1 className="font-bold text-5xl text-white ">{movie?.title}</h1>
-                <div className="flex flex-row gap-5 px-5 max-w-96">
+                <div className="flex flex-row gap-5 px-0 md max-w-96">
                     <button 
                         className="bg-[#38383880] hover:bg-[#e6e6e6] text-white hover:text-black px-10 py-2 rounded-md"
                     >

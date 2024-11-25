@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import ShimmerRow from "./shimmerComps/shimmerRow"
 import DelayedRender from "./DelayRender";
-import MovieDetailsCard from "./MovieDetailsCardComps/MovieDetailsCard";
+import MovieDetailsCard from "./MovieDetailsCardComps/DetailsCard";
 
 export default function Row(props) {
     const [movies, setMovies] = useState([]);
@@ -35,7 +35,6 @@ export default function Row(props) {
 
     useEffect(() => {
         if (selectedMovie) {
-            console.log('Selected Movie:', selectedMovie);
             setIsModalOpen(true);
         }
     }, [selectedMovie]);

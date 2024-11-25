@@ -142,15 +142,11 @@ export default function BrowseContent() {
                             <div className='relative'>
                                 {!loadedImages[item.id] && <ShimmerImage />}
                                 <img
-                                    className={`w-full h-auto rounded-md scale-95 group-hover:scale-100 transition-all duration-300 ease-in-out
+                                    className={`w-full h-auto rounded-md scale-90 group-hover:scale-100 transition-all duration-300 ease-in-out
                                     ${loadedImages[item.id] ? 'opacity-100' : 'opacity-0'}`}
                                     src={`${baseImgUrl}${item.poster_path}`}
                                     alt={item.title || item.name}
                                     onLoad={() => handleImageLoad(item.id)}
-                                    style={{
-                                        minHeight: '230px',
-                                        objectFit: 'cover'
-                                    }}
                                 />
                             </div>
                             <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t  from-black opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>

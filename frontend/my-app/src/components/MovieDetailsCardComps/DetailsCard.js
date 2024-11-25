@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 import { tmdbAxios } from "../../axios";
-import DetailsHero from "./MovieDetailsHero"
+import DetailsHero from "./DetailsHero"
 import DetailsBody from "./MovieDetailsBody"
 
 export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
@@ -22,15 +22,14 @@ export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
             } else {
                 response = await tmdbAxios.get(`tv/${movieId}`) 
             }
-            console.log("Fecthed details: ",response.data)
             setMovieDetails(response.data)
         }
         fetchDetails(movieId);
     }, [movieId])
 
     return (
-        <div className="fixed inset-0 pt-16 z-10 items-center text-white bg-black bg-opacity-80 justify-center overflow-y-auto">
-            <div className="relative w-6/12 max-w-4xl mx-auto z-20
+        <div className="fixed inset-0 pt-32 z-10 items-center text-white bg-black bg-opacity-80 justify-center overflow-y-auto">
+            <div className="relative w-10/12  md:w-9/12 lg:w-7/12 max-w-4xl mx-auto z-20
                             bg-neutral-900 rounded-lg shadow-2xl
                             overflow-y-auto"
             >
@@ -43,8 +42,8 @@ export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
                 >
                     ✕
                 </button>
-                <DetailsHero details={movieDetails} mediaType={mediaType}/>
-                <DetailsBody details={movieDetails} mediaType={mediaType}/>
+                <DetailsHero details={movieDetails} mediaType={mediaType === 'Movie' ? 'movie' : 'tv'}/>
+                <DetailsBody details={movieDetails} mediaType={mediaType === 'Movie' ? 'movie' : 'tv'}/>
             </div>
         </div>
     )

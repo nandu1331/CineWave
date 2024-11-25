@@ -82,6 +82,15 @@ button:active {
   font-size: 14px;
 }
 
+.success-message {
+  color: #2ecc71;
+  margin-bottom: 16px;
+  padding: 10px;
+  background-color: #0a2917;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 .form-footer {
   margin-top: 16px;
   text-align: center;

@@ -65,7 +65,7 @@ export default function SearchBar({ isMobile }) {
                         absolute 
                         left-3 
                         top-1/2 
-                        text-xl
+                        text-2xl
                         transform 
                         -translate-y-1/2
                         text-gray-400

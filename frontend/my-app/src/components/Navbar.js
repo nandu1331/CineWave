@@ -1,54 +1,45 @@
 import React, { useState, useEffect } from "react";
-import NavLinks from "./Navbar-components/NavLinks";
-import SearchBar from "./Navbar-components/SearchBar";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { djangoAxios } from "../axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDoorOpen, faSignOut } from "@fortawesome/free-solid-svg-icons";
+import { faSignOut, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+
+import NavLinks from "./Navbar-components/NavLinks";
+import SearchBar from "./Navbar-components/SearchBar";
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (window.scrollY > 150) {
-                setIsScrolled(true);
-            } else {
-                setIsScrolled(false);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-
-        // Cleanup listener on component unmount
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-        };
-    }, []);
-
-    const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
-    };
-
     const [username, setUsername] = useState('');
-    const navigate = useNavigate();
     const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState(true);
 
+    const navigate = useNavigate();
+
+    // Scroll effect
     useEffect(() => {
-        // Fetch user info when component mounts
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 150);
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    // User info fetch
+    useEffect(() => {
         const fetchUserInfo = async () => {
             try {
                 setIsLoaded(true);
                 setError(null);
                 const response = await djangoAxios.get('user/info/');
-                setUsername(response.data.username)
+                setUsername(response.data.username);
             } catch (error) {
                 if (error.response?.status === 401) {
                     handleLogout();
                 } else {
-                    setError('Failed to fetch user Info')
+                    setError('Failed to fetch user Info');
                 }
             } finally {
                 setIsLoaded(false);
@@ -57,12 +48,12 @@ export default function Navbar() {
 
         if (localStorage.getItem('access_token')) {
             fetchUserInfo();
-        }
-        else {
+        } else {
             setIsLoaded(false);
         }
     }, []);
 
+    // Logout handler
     const handleLogout = () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -70,62 +61,117 @@ export default function Navbar() {
         navigate('/login');
     };
 
+    // Mobile menu toggle
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    // Animation variants
+    const navVariants = {
+        initial: { opacity: 0, y: -50 },
+        animate: { 
+            opacity: 1, 
+            y: 0,
+            transition: { 
+                duration: 0.5,
+                ease: "easeOut"
+            }
+        }
+    };
+
+    const mobileMenuVariants = {
+        initial: { 
+            opacity: 0, 
+            height: 0
+        },
+        animate: { 
+            opacity: 1, 
+            height: 'auto',
+            transition: {
+                duration: 0.3,
+                ease: "easeInOut"
+            }
+        },
+        exit: { 
+            opacity: 0, 
+            height: 0,
+            transition: {
+                duration: 0.2,
+                ease: "easeInOut"
+            }
+        }
+    };
+
     return (
-        <nav
-            className={`fixed top-0 left-0 w-full flex flex-row justify-between items-center px-6 z-50 transition-colors duration-500 ease-in-out ${
-                isScrolled ? "bg-black bg-opacity-90" : "bg-transparent"
-            }`}
+        <motion.nav
+            initial="initial"
+            animate="animate"
+            variants={navVariants}
+            className={`
+                fixed top-0 left-0 w-full z-50 
+                transition-all duration-500 ease-in-out
+                ${isScrolled ? 'bg-black/90 shadow-lg' : 'bg-transparent'}
+            `}
         >
-            {/* Mobile Hamburger Icon */}
-            <div className="block lg:hidden" onClick={toggleMobileMenu}>
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="w-6 h-6 text-white"
+            <div className="container p-8 flex gap-5 justify-between items-center py-3 md:py-5">
+                {/* Mobile Menu Toggle */}
+                <motion.div 
+                    whileTap={{ scale: 0.9 }}
+                    className="lg:hidden text-white ml-0"
+                    onClick={toggleMobileMenu}
                 >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4 6h16M4 12h16M4 18h16"
+                    <FontAwesomeIcon 
+                        icon={isMobileMenuOpen ? faTimes : faBars} 
+                        className="w-6 h-6" 
                     />
-                </svg>
+                </motion.div>
+
+                {/* Desktop Navigation */}
+                <div className="hidden lg:flex items-center">
+                    <NavLinks />
+                </div>
+
+                {/* Right Side Actions */}
+                <div className="flex items-center pr-5 md:pr-10 lg:pr-16">
+                    <SearchBar isMobile={isMobileMenuOpen} />
+                    {username ? (
+                        <div className="flex items-center space-x-4">
+                            <motion.span 
+                                className="text-white text-lg font-medium capitalize"
+                                whileHover={{ scale: 1.05 }}
+                            >
+                                {username}
+                            </motion.span>
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                whileHover={{ scale: 1.1 }}
+                                onClick={handleLogout}
+                                className="text-white hover:text-red-500 transition-colors"
+                            >
+                                <FontAwesomeIcon icon={faSignOut} className="text-2xl" />
+                            </motion.button>
+                        </div>
+                    ) : null}
+                </div>
             </div>
 
-            {/* Desktop Links */}
-            <div className="hidden lg:flex flex-row items-center gap-5 justify-between">
-                <NavLinks />
-            </div>
-
-            {/* Search Bar */}
-            <div className="flex flex-row gap-10 items-center align-middle">
-            <SearchBar isMobile={isMobileMenuOpen} /> 
-            <div className="flex flex-row gap-7 items-center align-middle mr-12">
-                {username && (
-                    <>
-                        <span className="text-white capitalize text-xl hover:text-gray-300 transition-colors duration-200">
-                            {username}
-                        </span>
-                        <FontAwesomeIcon 
-                            icon={faSignOut}
-                            className="text-white text-4xl hover:text-red-600 hover:scale-125 transition-all duration-200 cursor-pointer"
-                        />
-                    </>
+            {/* Mobile Menu */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        key="mobile-menu"
+                        variants={mobileMenuVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        className="lg:hidden absolute top-full left-0 w-full bg-black/90"
+                    >
+                        <div className="container mx-auto px-4 py-4">
+                            <NavLinks isMobile />
+                        </div>
+                    </motion.div>
                 )}
-            </div>
-
-            </div>
-
-            {/* Mobile Menu (Hidden by default on large screens, shown when isMobileMenuOpen is true) */}
-            <div
-                className={`lg:hidden absolute top-16 p-3 left-0 w-full bg-black bg-opacity-90 flex flex-col justify-center ${
-                    isMobileMenuOpen ? "block" : "hidden"
-                }`}
-            >
-                <NavLinks isMobile={isMobileMenuOpen} />
-            </div>
-        </nav>
+            </AnimatePresence>
+        </motion.nav>
     );
 }
