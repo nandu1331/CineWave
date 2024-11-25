@@ -24,29 +24,38 @@ export default function Register() {
     }
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
+    e.preventDefault();
+    setError('');
 
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords don't match!");
-            return;
+    if (formData.password !== formData.confirmPassword) {
+        setError("Passwords don't match!");
+        return;
+    }
+    try {
+        const response = await djangoAxios.post('/register/', {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password
+        });
+        
+        console.log('Registration successful:', response.data);
+        navigate('/login');
+    } catch (error) {
+        console.error('Registration Error:', error);
+        
+        if (error.response) {
+            // Server responded with an error
+            setError(error.response.data.error || 'Registration failed. Please try again.');
+        } else if (error.request) {
+            // Request was made but no response
+            setError('Unable to reach the server. Please check your connection.');
+        } else {
+            // Something else went wrong
+            setError('An unexpected error occurred. Please try again.');
         }
-        try {
-            await djangoAxios.post('/register/', {
-                username: formData.username,
-                email: formData.email,
-                password: formData.password
-            });
-            navigate('/login');
-        } catch (error) {
-            if (error.response?.data?.error) {
-                setError(error.response.data.error)
-            } else {
-                setError('Registration failed. Please try again.');
-            }
-            console.error('Registration Error:', error);
-        }
-    };
+    }
+};
+
 
     return (
         <div className="login-container">
