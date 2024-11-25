@@ -1,19 +1,5 @@
 
-//const API_KEY = "7c8de2a388acb53e053f789245bde1e9";
 
-// const response = {
-//   method: 'GET',
-//   url: `https://api.themoviedb.org/3/`, // Ensure this is correct
-//   params: {
-//       api_key: API_KEY, // Replace with your actual TMDB API key
-//       language: 'en-US',
-//       region: 'US',
-//   },
-// };
-
-// export default response
-
-// frontend/src/axios.js
 import axios from 'axios';
 
 const API_KEY = process.env.REACT_APP_API_KEY;
