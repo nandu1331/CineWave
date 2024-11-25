@@ -6,7 +6,7 @@ import { useState } from "react";
 import ShimmerBanner from "./shimmerComps/shimmerBanner";
 
 export default function Banner() {
-    const [movie, setMovie] = React.useState(null);  // It's better to set null initially
+    const [movie, setMovie] = React.useState(null); 
     const [loading, setLoading] = useState(true);
     const [trailer, setTrailer] = useState(null);
     const baseImgUrl = "https://image.tmdb.org/t/p/original/";
@@ -18,17 +18,16 @@ export default function Banner() {
         tmdbAxios
             .get(url, {
                 params: {
-                    api_key: `${apikey}`,  // Ensure to replace with a valid API key
-                    ...requests.params,  // Ensure params are correct
+                    api_key: `${apikey}`, 
+                    ...requests.params, 
                 },
             })
             .then(res => {
-                // Select a random movie
                 const randomMovie = res.data.results[Math.floor(Math.random() * res.data.results.length)];
                 setMovie(randomMovie);
-                setLoading(false); // Update the state with the movie data
+                setLoading(false); 
             })
-            .catch(err => console.error("Error fetching data:", err));  // Always handle errors
+            .catch(err => console.error("Error fetching data:", err)); 
         }, []);
 
     const imageUrl = `${baseImgUrl}${movie?.backdrop_path}`
@@ -37,9 +36,6 @@ export default function Banner() {
     return <ShimmerBanner />
   }
 
-    
-
-    // If movie data is available, render it; otherwise, show a loading state
     return (
         <header 
             className="bg-cover bg-center bg-no-repeat h-[70%]"

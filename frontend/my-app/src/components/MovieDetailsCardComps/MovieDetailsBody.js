@@ -16,7 +16,7 @@ export default function DetailsBody({ details }) {
                 <FontAwesomeIcon icon={faStar} className="text-yellow-600" />
                 <p>{details.vote_average?.toFixed(1)}</p> 
                 <p> • </p> 
-                <p>{details.release_date?.split('-')[0]}</p>
+                <p>{(details.release_date || details.first_air_date)?.split('-')[0]}</p>
                 <p> • </p> 
                 <p>{formatRunTime(details.runtime)}</p>
             </div>

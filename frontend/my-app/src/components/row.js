@@ -24,7 +24,6 @@ export default function Row(props) {
         }
     };
     
-    // Modify handleClick to store the entire movie object
     const handleClick = (movie) => {
         setSelectedMovie(movie);
     };
@@ -34,10 +33,8 @@ export default function Row(props) {
         setIsModalOpen(false);
     };
 
-    // Use effect to handle modal opening when a movie is selected
     useEffect(() => {
         if (selectedMovie) {
-            // Additional checks or preparations before opening modal
             console.log('Selected Movie:', selectedMovie);
             setIsModalOpen(true);
         }

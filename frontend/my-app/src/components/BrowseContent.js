@@ -16,10 +16,10 @@ export default function BrowseContent() {
     const [error, setError] = useState(null);
     const [trailerUrl, setTrailerUrl] = useState('');
     const [addedItems, setAddedItems] = useState({});
-    const { category } = useParams(); // 'movies', 'tvshows', etc.
+    const { category } = useParams();
     const baseImgUrl = "https://image.tmdb.org/t/p/original/";
 
-    // YouTube player options (reusing from your row.js)
+
     const opts = {
         height: '390',
         width: '100%',

@@ -8,8 +8,6 @@ import requests from './requests';
 import Register from './components/register';
 import BrowseContent from './components/BrowseContent';
 import MyList from './components/MyList';
-import MovieDetails from './components/MovieDetailsCardComps/MovieDetailsCard';
-import MovieDetailsCard from './components/MovieDetailsCardComps/MovieDetailsCard';
 
 export default function App() {
     return (
