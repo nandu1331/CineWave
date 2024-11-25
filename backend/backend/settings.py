@@ -162,5 +162,3 @@ import environ
 
 env = environ.Env()
 environ.Env.read_env()
-DATABASE_URL = 'https://syafkysnoxwukyzimnnm.supabase.co'
-DATABASE_URL = env('DATABASE_URL')
