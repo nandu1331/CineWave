@@ -1,7 +1,12 @@
-#!/usr/bin/env bash
-set -o errexit
+#!/bin/bash
+set -e  # Exit on error
+
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate
 
 # Install dependencies
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 # Collect static files
