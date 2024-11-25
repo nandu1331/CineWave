@@ -32,7 +32,7 @@ export default function Register() {
         return;
     }
     try {
-        const response = await djangoAxios.post('api/register/', {
+        const response = await djangoAxios.post('/register/', {
             username: formData.username,
             email: formData.email,
             password: formData.password
