@@ -45,7 +45,7 @@ export default function Register() {
         
         if (error.response) {
             // Server responded with an error
-            setError(error.response.data.error || 'Registration failed. Please try again.');
+            setError(error.response?.data?.error || 'Registration failed. Please try again.');
         } else if (error.request) {
             // Request was made but no response
             setError('Unable to reach the server. Please check your connection.');
@@ -61,7 +61,7 @@ export default function Register() {
         <div className="login-container">
             <form onSubmit={handleSubmit} className="login-form">
                 <h2>Create Account</h2>
-                {error && <div>{error}</div>}
+                {error && <div className="error-message">{error}</div>}
 
                 <div className="form-group">
                     <label htmlFor="username">User Name</label>
