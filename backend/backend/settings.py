@@ -29,6 +29,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     '.vercel.app',
+    'https://cine-wave-backend.vercel.app/',
     'localhost',
     '127.0.0.1',
     'https://netflix-clone-6cbb6.web.app'
@@ -84,10 +85,16 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASE_URL = 'https://syafkysnoxwukyzimnnm.supabase.co'
+
+import environ
+
+# If using django-environ
+env = environ.Env()
+environ.Env.read_env()  # Load .env file
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+        default=env('DATABASE_URL'),
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -157,8 +164,3 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
-import environ
-
-env = environ.Env()
-environ.Env.read_env()
