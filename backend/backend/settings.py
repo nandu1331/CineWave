@@ -162,5 +162,5 @@ import environ
 
 env = environ.Env()
 environ.Env.read_env()
-
-SECRET_KEY = env('SECRET_KEY')
+DATABASE_URL = 'https://syafkysnoxwukyzimnnm.supabase.co'
+DATABASE_URL = env('DATABASE_URL')
