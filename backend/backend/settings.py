@@ -144,6 +144,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "https://cine-wave-livid.vercel.app",
     "http://localhost:3000"
+    "https://vercel.com/aizen-sosukes-projects/cine-wave/DSBMJspW5dgBvqMRmsvDjiXrMSeM"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
