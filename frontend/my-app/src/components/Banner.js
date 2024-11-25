@@ -64,5 +64,5 @@ export default function Banner() {
                   }}
             ></div>
         </header>
-    );
+     );
 }
