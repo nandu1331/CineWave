@@ -12,15 +12,12 @@
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "backend/wsgi.py"
     }
   ],
   "env": {
-    "DJANGO_SETTINGS_MODULE": "backend.settings"
+    "DJANGO_SETTINGS_MODULE": "backend.settings",
+    "ALLOWED_HOSTS": ".vercel.app"
   }
 }
