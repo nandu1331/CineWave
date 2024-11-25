@@ -4,13 +4,23 @@
     {
       "src": "backend/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "python3.12.3" }
+      "config": { 
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.12.3"
+      }
     }
   ],
   "routes": [
     {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "backend/wsgi.py"
     }
-  ]
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "backend.settings"
+  }
 }

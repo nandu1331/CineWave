@@ -29,10 +29,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     '.vercel.app',
-    'https://cine-wave-backend.vercel.app/',
     'localhost',
     '127.0.0.1',
-    'https://netflix-clone-6cbb6.web.app'
 ]
 
 
@@ -145,7 +143,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", 
-    "https://netflix-clone-6cbb6.web.app" 
+    "https://cine-wave-livid.vercel.app" 
 ]
 
 # Configure REST Framework
