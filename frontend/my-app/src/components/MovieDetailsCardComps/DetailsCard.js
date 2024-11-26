@@ -29,7 +29,7 @@ export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
 
     return (
         <div className="fixed inset-0 pt-32 z-10 items-center text-white bg-black bg-opacity-80 justify-center overflow-y-auto">
-            <div className="relative w-10/12  md:w-9/12 lg:w-7/12 max-w-4xl mx-auto z-20
+            <div className="relative w-11/12  md:w-9/12 lg:w-7/12 max-w-4xl mx-auto z-20
                             bg-neutral-900 rounded-lg shadow-2xl
                             overflow-y-auto"
             >

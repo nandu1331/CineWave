@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faCalendar, faClock } from "@fortawesome/free-solid-svg-icons";
 import { tmdbAxios } from "../../axios";
 import RecommendationCard from "./RecommendationCard";
 
@@ -29,41 +30,126 @@ export default function DetailsBody({ details, mediaType }) {
         }
     }, [details, mediaType]);
 
+    // Animation Variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { 
+            opacity: 1,
+            transition: {
+                delayChildren: 0.3,
+                staggerChildren: 0.2
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: { 
+            y: 0, 
+            opacity: 1,
+            transition: {
+                type: "spring",
+                damping: 12,
+                stiffness: 100
+            }
+        }
+    };
+
     return (
-        <div className="p-7 flex flex-col gap-5 bg-black text-white rounded-lg shadow-lg">
-            <h1 className="text-3xl font-bold">{details?.title || details?.original_title || details?.name}</h1>
-            <div className="flex flex-row gap-2 items-center">
-                <FontAwesomeIcon icon={faStar} className="text-yellow-400" />
-                <p className="font-medium">{details.vote_average?.toFixed(1) || "N/A"}</p>
-                <p> • </p>
-                <p>{(details.release_date || details.first_air_date)?.split('-')[0] || "N/A"}</p>
-                <p> • </p>
-                <p>{formatRunTime(details?.runtime)}</p>
-            </div>
-            <div className="flex flex-row flex-wrap items-center gap-2">
+        <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="p-4 md:p-7 flex flex-col gap-6 bg-gradient-to-br from-neutral-900 to-black text-white rounded-2xl shadow-2xl"
+        >
+            {/* Title Section */}
+            <motion.h1 
+                variants={itemVariants}
+                className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400"
+            >
+                {details?.title || details?.original_title || details?.name}
+            </motion.h1>
+
+            {/* Movie Info */}
+            <motion.div 
+                variants={itemVariants}
+                className="flex flex-wrap items-center gap-4 text-sm md:text-base"
+            >
+                <div className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faStar} className="text-yellow-400" />
+                    <span>{details.vote_average?.toFixed(1) || "N/A"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faCalendar} className="text-blue-400" />
+                    <span>{(details.release_date || details.first_air_date)?.split('-')[0] || "N/A"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faClock} className="text-green-400" />
+                    <span>{formatRunTime(details?.runtime)}</span>
+                </div>
+            </motion.div>
+
+            {/* Genres */}
+            <motion.div 
+                variants={itemVariants}
+                className="flex flex-wrap items-center gap-2"
+            >
                 {details.genres?.map((genre) => (
-                    <div
+                    <motion.div
                         key={genre.id}
-                        className="px-3 py-1 bg-neutral-800 rounded-full text-sm text-gray-300 hover:bg-neutral-700 transition-colors duration-200"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-3 py-1 bg-neutral-800/50 backdrop-blur-sm rounded-full text-sm text-gray-300 hover:bg-neutral-700 transition-all duration-300"
                     >
                         {genre.name}
-                    </div>
+                    </motion.div>
                 ))}
-            </div>
-            <p className="text-lg">{details.overview || "No overview available."}</p>
-            <h2 className="text-2xl font-semibold mt-5">Recommendations</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                {recommendations?.slice(0, 9).map((item) => (
-                    <RecommendationCard 
-                        key={item.id}
-                        title={item?.name || item?.title || item?.original_title}
-                        poster={`https://image.tmdb.org/t/p/original/${item.poster_path}`}
-                        rating={item.vote_average?.toFixed(1) || "N/A"}
-                        releaseYear={(item.release_date || item.first_air_date)?.split('-')[0] || "N/A"}
-                        overview={item?.overview}
-                    />
-                ))}
-            </div>
-        </div>
+            </motion.div>
+
+            {/* Overview */}
+            <motion.p 
+                variants={itemVariants}
+                className="text-base md:text-lg text-gray-300 leading-relaxed"
+            >
+                {details.overview || "No overview available."}
+            </motion.p>
+
+            {/* Recommendations Section */}
+            <motion.h2 
+                variants={itemVariants}
+                className="text-2xl md:text-3xl font-semibold mt-5 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400"
+            >
+                Recommendations
+            </motion.h2>
+
+            {/* Recommendations Grid */}
+            <motion.div 
+                variants={containerVariants}
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 lg:gap-6"
+            >
+                <AnimatePresence>
+                    {recommendations?.slice(0, 9).map((item, index) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ 
+                                duration: 0.3,
+                                delay: index * 0.1
+                            }}
+                        >
+                            <RecommendationCard 
+                                title={item?.name || item?.title || item?.original_title}
+                                poster={`https://image.tmdb.org/t/p/original/${item.poster_path}`}
+                                rating={item.vote_average?.toFixed(1) || "N/A"}
+                                releaseYear={(item.release_date || item.first_air_date)?.split('-')[0] || "N/A"}
+                                overview={item?.overview}
+                            />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </motion.div>
+        </motion.div>
     );
 }

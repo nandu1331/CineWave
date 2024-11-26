@@ -31,7 +31,7 @@ export default function VideoPlayer({
     return (
         <div className="h-full w-full relative overflow-hidden">
             {trailer && 
-                <div className="absolute inset-0 scale-[1.60] md:scale-[1.45] lg:scale-[1.37]">
+                <div className="absolute inset-0 scale-[1.75] md:scale-[1.45] lg:scale-[1.37]">
                     <ReactPlayer
                         ref={videoRef}
                         url={`https://www.youtube.com/watch?v=${trailer.key}`}

@@ -30,30 +30,13 @@ export default function DetailsHero({ details, mediaType }) {
 
                 const data = response.data;
                 
-                // Priority order for trailer selection
                 const trailerPriorities = [
-                    // First, look for official trailers in English
-                    video => video.type === 'Trailer' && 
-                             video.site === 'YouTube' && 
-                             video.official === true && 
-                             (video.iso_639_1 === 'en' || !video.iso_639_1),
-                    
-                    // Then, any official trailer
-                    video => video.type === 'Trailer' && 
-                             video.site === 'YouTube' && 
-                             video.official === true,
-                    
-                    // Then, any trailer in English
-                    video => video.type === 'Trailer' && 
-                             video.site === 'YouTube' && 
-                             (video.iso_639_1 === 'en' || !video.iso_639_1),
-                    
-                    // Finally, any trailer
-                    video => video.type === 'Trailer' && 
-                             video.site === 'YouTube'
+                    video => video.type === 'Trailer' && video.site === 'YouTube' && video.official === true && (video.iso_639_1 === 'en' || !video.iso_639_1),
+                    video => video.type === 'Trailer' && video.site === 'YouTube' && video.official === true,
+                    video => video.type === 'Trailer' && video.site === 'YouTube' && (video.iso_639_1 === 'en' || !video.iso_639_1),
+                    video => video.type === 'Trailer' && video.site === 'YouTube'
                 ];
 
-                // Find the first matching trailer
                 for (let priority of trailerPriorities) {
                     const matchingTrailer = data.results?.find(priority);
                     if (matchingTrailer) {
@@ -68,19 +51,15 @@ export default function DetailsHero({ details, mediaType }) {
             }
         }
 
-        // Fetch trailer when details and ID are available
         if (details?.id) {
             fetchTrailer();
         }
     }, [details?.id, mediaType, API_KEY]);
 
-    // Logo fetching logic (as in previous response)
     useEffect(() => {
         async function fetchMovieLogo() {
             try {
-                const imagesEndPoint = mediaType === "movie" ?
-                    `movie/${details.id}/images` :
-                    `tv/${details.id}/images`;
+                const imagesEndPoint = mediaType === "movie" ? `movie/${details.id}/images` : `tv/${details.id}/images`;
                 
                 const imagesResponse = await tmdbAxios.get(imagesEndPoint, {
                     params: {
@@ -92,13 +71,8 @@ export default function DetailsHero({ details, mediaType }) {
                 const logos = imagesResponse.data.logos;
                 if (logos && logos.length > 0) {
                     const filteredLogos = logos
-                        .filter(logo => {
-                            const aspectRatio = logo.aspect_ratio;
-                            return aspectRatio >= 1.5 && aspectRatio <= 4;
-                        })
-                        .filter(logo => {
-                            return logo.width >= 400 && logo.height >= 100;
-                        })
+                        .filter(logo => logo.aspect_ratio >= 1.5 && logo.aspect_ratio <= 4)
+                        .filter(logo => logo.width >= 400 && logo.height >= 100)
                         .sort((a, b) => {
                             const getScore = (logo) => {
                                 let score = 0;                                
@@ -117,18 +91,15 @@ export default function DetailsHero({ details, mediaType }) {
                         const logoPath = `https://image.tmdb.org/t/p/original${bestLogo.file_path}`;
                         setMovieTitle(logoPath);
                     } else {
-                        // Fallback to poster if no suitable logo found
                         const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}`;
                         setMovieTitle(fallbackLogo);
                     }
                 } else {
-                    // Fallback to poster if no logos found
                     const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}`;
                     setMovieTitle(fallbackLogo);
                 }
             } catch (error) {
                 console.error("Error fetching movie logo:", error);
-                // Fallback to poster if logo fetch fails
                 const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}`;
                 setMovieTitle(fallbackLogo);
             }
@@ -163,6 +134,13 @@ export default function DetailsHero({ details, mediaType }) {
                         style={{ backgroundImage: `url(${imageUrl})` }}
                         onClick={handleClick}
                     >
+                        <motion.div 
+                            className="absolute inset-0 bg-black opacity-30" 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 0.3 }} 
+                            exit={{ opacity: 0 }} 
+                            transition={{ duration: 1 }} 
+                        />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -193,7 +171,7 @@ export default function DetailsHero({ details, mediaType }) {
             </AnimatePresence>
 
             {movieTitle && (
-                <div className="absolute bottom-10 left-7 max-w-[175px]">
+                <div className="absolute bottom-4 left-3 lg:bottom-10 lg:left-7 w-[90px] max-w-[175px]">
                     <img 
                         src={movieTitle} 
                         alt="Movie Logo"
@@ -203,15 +181,15 @@ export default function DetailsHero({ details, mediaType }) {
             )}
 
             {/* Volume Control Button */}
-            <div className="absolute bottom-[53px] right-[100px] z-10">
+            <div className="absolute bottom-[14px] right-[100px] lg:bottom-[53px] lg:right-[100px] z-10">
                 <FontAwesomeIcon 
                     icon={audio ? faVolumeHigh : faVolumeOff} 
                     onClick={() => setAudio(prev => !prev)}
                     className="text-4xl cursor-pointer transition-transform transform hover:scale-110"
                 />
             </div>
-            <div className="bg-black bg-opacity-25 border-white border-l-[5px] w-fit right-0 top-[75%] absolute pr-12 px-2 py-2">
-                <h1>{details?.adult ? '18+' : 'Any'}</h1>
+            <div className="bg-black bg-opacity-25 border-white border-l-[5px] w-fit right-0 top-[75%] absolute pr-12 px-2 py-2 rounded-lg">
+                <h1 className="text-lg font-semibold">{details?.adult ? '18+' : 'Any'}</h1>
             </div>
         </div>
     );

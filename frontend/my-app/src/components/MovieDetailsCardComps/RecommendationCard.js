@@ -10,11 +10,11 @@ export default function RecommendationCard({
     overview,
 }) {
     return (
-        <div className="flex flex-col bg-[#111] rounded-lg overflow-hidden shadow-md transition-transform transform hover:scale-105">
+        <div className="flex flex-col bg-neutral-800 h-full rounded-lg overflow-hidden shadow-md transition-transform transform hover:scale-[101%]">
             <img 
                 src={poster} 
                 alt={`${title} poster`} 
-                className="w-full h-64 object-cover"
+                className="w-full h-full object-cover"
             />
             <div className="p-4 flex flex-col">
                 <div className="flex flex-row items-center mb-2">
@@ -23,7 +23,7 @@ export default function RecommendationCard({
                     <p className="mx-2">•</p>
                     <p className="text-gray-400">{releaseYear || "N/A"}</p>
                 </div>
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-gray-300 h-fit">
                     {overview ? (overview.length > 60 ? `${overview.slice(0, 60)}...` : overview) : "No overview available."}
                 </p>
             </div>

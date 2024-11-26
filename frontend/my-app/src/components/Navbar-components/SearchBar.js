@@ -33,7 +33,7 @@ export default function SearchBar({ isMobile }) {
                 transition-all 
                 duration-300 
                 ease-in-out
-                ${isSearchOpen ? 'w-64' : 'w-8'}
+                ${isSearchOpen ? 'w-36 md:w-56 lg:w-64' : 'w-8'}
             `}>
                 <input
                     className={`

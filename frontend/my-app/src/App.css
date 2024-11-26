@@ -7,8 +7,9 @@
 }
 
 .app {
-  background: #111;
+  background: black;
   background-size: cover;
+  padding-bottom: 50px;
 }
 
 .App-logo {

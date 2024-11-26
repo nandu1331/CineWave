@@ -108,16 +108,16 @@ export default function Navbar() {
             animate="animate"
             variants={navVariants}
             className={`
-                fixed top-0 left-0 w-full z-50 
+                fixed top-0 left-0 z-50 w-full lg:pr-[60px]
                 transition-all duration-500 ease-in-out
-                ${isScrolled ? 'bg-black/90 shadow-lg' : 'bg-transparent'}
+                ${isScrolled ? 'bg-black bg-opacity-90 shadow-lg' : 'bg-transparent'}
             `}
         >
-            <div className="container p-8 flex gap-5 justify-between items-center py-3 md:py-5">
+            <div className="p-4 flex justify-between items-center">
                 {/* Mobile Menu Toggle */}
                 <motion.div 
                     whileTap={{ scale: 0.9 }}
-                    className="lg:hidden text-white ml-0"
+                    className="lg:hidden text-white"
                     onClick={toggleMobileMenu}
                 >
                     <FontAwesomeIcon 
@@ -132,24 +132,24 @@ export default function Navbar() {
                 </div>
 
                 {/* Right Side Actions */}
-                <div className="flex items-center pr-5 md:pr-10 lg:pr-16">
+                <div className="flex items-center gap-5 ml-auto">
                     <SearchBar isMobile={isMobileMenuOpen} />
                     {username ? (
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center gap-5">
                             <motion.span 
-                                className="text-white text-lg font-medium capitalize"
+                                className="text-white text-lg font-medium capitalize hover:text-gray-300 transition-colors"
                                 whileHover={{ scale: 1.05 }}
                             >
                                 {username}
                             </motion.span>
-                            <motion.button
+                            <motion.div
                                 whileTap={{ scale: 0.9 }}
                                 whileHover={{ scale: 1.1 }}
                                 onClick={handleLogout}
                                 className="text-white hover:text-red-500 transition-colors"
                             >
-                                <FontAwesomeIcon icon={faSignOut} className="text-2xl" />
-                            </motion.button>
+                                <FontAwesomeIcon icon={faSignOut} className="text-4xl" />
+                            </motion.div>
                         </div>
                     ) : null}
                 </div>
@@ -164,7 +164,7 @@ export default function Navbar() {
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        className="lg:hidden absolute top-full left-0 w-full bg-black/90"
+                        className="lg:hidden absolute top-full left-0 w-full bg-neutral-800"
                     >
                         <div className="container mx-auto px-4 py-4">
                             <NavLinks isMobile />
