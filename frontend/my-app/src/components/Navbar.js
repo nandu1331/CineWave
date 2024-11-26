@@ -113,7 +113,7 @@ export default function Navbar() {
                 ${isScrolled ? 'bg-black bg-opacity-90 shadow-lg' : 'bg-transparent'}
             `}
         >
-            <div className="p-4 flex justify-between items-center">
+            <div className="px-4 py-2 flex justify-between items-center">
                 {/* Mobile Menu Toggle */}
                 <motion.div 
                     whileTap={{ scale: 0.9 }}
@@ -164,7 +164,7 @@ export default function Navbar() {
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        className="lg:hidden absolute top-full left-0 w-full bg-neutral-800"
+                        className="lg:hidden absolute top-full left-0 w-full bg-black bg-opacity-80"
                     >
                         <div className="container mx-auto px-4 py-4">
                             <NavLinks isMobile />

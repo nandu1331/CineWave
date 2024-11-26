@@ -13,7 +13,7 @@ export const tmdbAxios = axios.create({
 });
 
 export const djangoAxios = axios.create({
-    baseURL: BACKEND_URL  || 'http://localhost:8000/api/',
+    baseURL: 'http://localhost:8000/api/',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
