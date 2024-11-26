@@ -143,6 +143,7 @@ export default function Row(props) {
                                     className="max-h-72 max-w-64 scale-95 hover:scale-100 transitionall duration-200 ease-in-out transform" 
                                     src={`${baseImgUrl}${props.isBig ? movie.poster_path : movie.backdrop_path}`} 
                                     alt={movie.title}
+                                    loading="lazy"
                                 />
                                 <div className="absolute bottom-0 scale-100 left-0 p-3 right-0 bg-gradient-to-t from-[#111] opacity-0 
                                     group-hover:opacity-100 transition-opacity duration-300">

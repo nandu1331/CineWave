@@ -113,13 +113,32 @@ export default function DetailsBody({ details, mediaType }) {
             >
                 {details.overview || "No overview available."}
             </motion.p>
+            <motion.strong>
+                About the Movie
+            </motion.strong>
+            <motion.span className="flex gap-2">Release Date: <p className="font-semibold">{details.release_date || "No franchise available."}</p></motion.span>
+            <motion.h3>Produced By:</motion.h3>
+            <motion.p className="flex flex-wrap text-white text-sm">
+               {Array.isArray(details.production_companies) && details.production_companies.length > 0 ? (
+                   details.production_companies
+                       .map(company => company?.name)
+                       .filter(name => name) // Filter out any undefined or null names
+                       .map((name, index) => (
+                           <span key={index} className="mr-2">
+                               {name}{index < details.production_companies.length - 1 ? ' - ' : ''}
+                           </span>
+                       ))
+               ) : (
+                   <span>No production companies available.</span> // Fallback message
+               )}
+            </motion.p>
 
             {/* Recommendations Section */}
             <motion.h2 
                 variants={itemVariants}
                 className="text-2xl md:text-3xl font-semibold mt-5 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400"
             >
-                Recommendations
+                More like this : 
             </motion.h2>
 
             {/* Recommendations Grid */}

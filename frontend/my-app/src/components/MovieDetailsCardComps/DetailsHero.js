@@ -152,7 +152,7 @@ export default function DetailsHero({ details, mediaType }) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1, ease: "linear" }}
-                        className="h-full w-full overflow-hidden"
+                        className="h-full lg:h-[400px] w-full overflow-hidden"
                         onClick={handleClick}
                     >
                         <VideoPlayer 
@@ -171,7 +171,7 @@ export default function DetailsHero({ details, mediaType }) {
             </AnimatePresence>
 
             {movieTitle && (
-                <div className="absolute bottom-4 left-3 lg:bottom-10 lg:left-7 w-[90px] max-w-[175px]">
+                <div className="absolute bottom-4 left-3 lg:bottom-10 lg:left-7 w-[90px] md:w-[130px]  max-w-[175px]">
                     <img 
                         src={movieTitle} 
                         alt="Movie Logo"
@@ -181,14 +181,14 @@ export default function DetailsHero({ details, mediaType }) {
             )}
 
             {/* Volume Control Button */}
-            <div className="absolute bottom-[14px] right-[100px] lg:bottom-[53px] lg:right-[100px] z-10">
+            <div className="absolute bottom-[16px] right-[100px] lg:bottom-[40px] lg:right-[100px] z-10">
                 <FontAwesomeIcon 
                     icon={audio ? faVolumeHigh : faVolumeOff} 
                     onClick={() => setAudio(prev => !prev)}
-                    className="text-4xl cursor-pointer transition-transform transform hover:scale-110"
+                    className="text-2xl cursor-pointer transition-transform transform hover:scale-110"
                 />
             </div>
-            <div className="bg-black bg-opacity-25 border-white border-l-[5px] w-fit right-0 top-[75%] absolute pr-12 px-2 py-2 rounded-lg">
+            <div className="bg-black bg-opacity-25 border-white border-l-[5px] w-fit right-0 top-[75%] md:top-[82%] lg:top-[79%] absolute pr-12 px-2 py-2 rounded-lg">
                 <h1 className="text-lg font-semibold">{details?.adult ? '18+' : 'Any'}</h1>
             </div>
         </div>
