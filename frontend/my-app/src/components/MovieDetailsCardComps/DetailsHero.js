@@ -176,6 +176,7 @@ export default function DetailsHero({ details, mediaType }) {
                         src={movieTitle} 
                         alt="Movie Logo"
                         className="w-full h-auto object-contain"
+                        loading="lazy"
                     />
                 </div>
             )}

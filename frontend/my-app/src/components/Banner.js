@@ -1,74 +1,139 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import tmdbAxios from "axios";
 import requests from "../requests";
 import ShimmerBanner from "./shimmerComps/shimmerBanner";
+import VideoPlayer from "./VideoPlayer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faVolumeHigh, faVolumeOff } from "@fortawesome/free-solid-svg-icons";
 
 export default function Banner() {
-    const [movie, setMovie] = useState(null); 
+    const [movie, setMovie] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [trailer, setTrailer] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [audio, setAudio] = useState(0); // Start muted
+    const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+    const [movieTitle, setMovieTitle] = useState(null);
+    const videoRef = useRef(null);
     const baseImgUrl = "https://image.tmdb.org/t/p/original/";
-    const apikey = process.env.REACT_APP_API_KEY
+    const apikey = process.env.REACT_APP_API_KEY;
+    
+    const fetchMovieLogo = async (movieId) => {
+    try {
+        const imagesEndPoint = `https://api.themoviedb.org/3/movie/${movieId}/images`;
+        const imagesResponse = await tmdbAxios.get(imagesEndPoint, {
+            params: {
+                api_key: apikey,
+            }
+        });
 
-    React.useEffect(() => {
-        setLoading(true);
-        const url = `https://api.themoviedb.org/3/${requests.fetchPopular}`;
-        tmdbAxios
-            .get(url, {
-                params: {
-                    api_key: `${apikey}`, 
-                    ...requests.params, 
-                },
-            })
-            .then(res => {
-                const randomMovie = res.data.results[Math.floor(Math.random() * res.data.results.length)];
-                setMovie(randomMovie);
-                setLoading(false); 
-            })
-            .catch(err => console.error("Error fetching data:", err)); 
+        const logos = imagesResponse.data.logos;
+        if (logos && logos.length > 0) {
+            // Just get the first English logo, or fallback to any logo
+            const englishLogo = logos.find(logo => logo.iso_639_1 === 'en');
+            const selectedLogo = englishLogo || logos[0];
+            const logoPath = `https://image.tmdb.org/t/p/original${selectedLogo.file_path}`;
+            setMovieTitle(logoPath);
+        } else {
+            // If no logos available, fall back to null (will show text title)
+            setMovieTitle(null);
+        }
+    } catch (error) {
+        console.error("Error fetching movie logo:", error);
+        setMovieTitle(null);
+    }
+};
+
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsLargeScreen(window.innerWidth >= 1024);
+            if (window.innerWidth < 1024) {
+                setIsPlaying(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+    
+    // Fetch initial movie data
+    useEffect(() => {
+        const fetchMovie = async () => {
+            setLoading(true);
+            try {
+                const url = `https://api.themoviedb.org/3/${requests.fetchPopular}`;
+                const res = await tmdbAxios.get(url, {
+                    params: {
+                        api_key: apikey,
+                        ...requests.params,
+                    },
+                });
+                const randomMovie = res.data.results[Math.floor(Math.random() * res.data.results.length)];
+                const detailedMovieRes = await tmdbAxios.get(`https://api.themoviedb.org/3/movie/${randomMovie.id}`, {
+                    params: {
+                        api_key: apikey,
+                    }
+                }); 
+                
+                const movieData = detailedMovieRes.data;
+                setMovie(movieData);
 
-    const imageUrl = `${baseImgUrl}${movie?.backdrop_path}`
-
-    // Animation variants
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: { 
-            opacity: 1,
-            transition: {
-                delayChildren: 0.3,
-                staggerChildren: 0.2
+                // Fetch logo and trailer for the same movie
+                await Promise.all([
+                    fetchMovieLogo(movieData.id),
+                    fetchMovieTrailer(movieData.id)
+                ]);
+                setLoading(false);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                setLoading(false);
             }
+        };
+        fetchMovie();
+    }, [apikey]);
+
+    // Fetch movie trailer
+    const fetchMovieTrailer = async (movieId) => {
+        try {
+            const endpoint = `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${apikey}`;
+            const response = await tmdbAxios.get(endpoint);
+            const trailerPriorities = [
+                video => video.type === 'Trailer' && video.site === 'YouTube' && video.official === true,
+                video => video.type === 'Trailer' && video.site === 'YouTube',
+                video => video.type === 'Teaser' && video.site === 'YouTube'
+            ];
+
+            for (let priority of trailerPriorities) {
+                const matchingTrailer = response.data.results?.find(priority);
+                if (matchingTrailer) {
+                    setTrailer(matchingTrailer);
+                    break;
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching trailer:", error);
         }
     };
 
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: { 
-            y: 0, 
-            opacity: 1,
-            transition: {
-                type: "spring",
-                damping: 12,
-                stiffness: 100
-            }
-        }
-    };
+    // Auto-play trailer after delay
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsPlaying(true);
+        }, 3000); // 3 second delay before playing
 
-    const buttonVariants = {
-        hover: {
-            scale: 1.05,
-            transition: {
-                duration: 0.3
-            }
-        },
-        tap: {
-            scale: 0.95
+        return () => clearTimeout(timer);
+    }, [movie]);
+
+    const handleBannerClick = () => {
+        if (isLargeScreen) {
+            setIsPlaying(!isPlaying);
         }
     };
 
     if (loading) {
-        return <ShimmerBanner />
+        return <ShimmerBanner />;
     }
 
     return (
@@ -76,73 +141,126 @@ export default function Banner() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="relative h-screen w-full overflow-hidden"
-            style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            className="relative h-[60vh] md:h-[80vh] lg:h-[95vh] w-full overflow-hidden"
+            onClick={handleBannerClick}
         >
-            {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent" />
+            {/* Background Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
 
-            <motion.div 
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="relative z-10 container p-4 lg:px-20 h-full flex flex-col justify-center"
-            >
-                <motion.h1 
-                    variants={itemVariants}
-                    className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 max-w-2xl"
-                >
-                    {movie?.title}
-                </motion.h1>
-
-                <motion.p 
-                    variants={itemVariants}
-                    className="text-md md:text-xl lg:text-lg text-gray-200 mb-8 max-w-xl"
-                >
-                    {movie?.overview}
-                </motion.p>
-
-                <motion.div 
-                    variants={itemVariants}
-                    className="flex space-x-4 min-w-fit max-w-96"
-                >
-                    <motion.button
-                        variants={buttonVariants}
-                        whileHover="hover"
-                        whileTap="tap"
-                        className="bg-red-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-red-700 transition"
+            {/* Video/Image Container */}
+            <AnimatePresence initial={false} >
+                {(!isPlaying || !trailer || !isLargeScreen) ? (
+                    <motion.div
+                        key="image"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.5 }}
+                        className="absolute inset-0 "
+                        
                     >
-                        <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            className="h-6 w-6" 
-                            fill="none" 
-                            viewBox="0 0 24 24" 
-                            stroke="currentColor"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Play
-                    </motion.button>
-
-                    <motion.button
-                        variants={buttonVariants}
-                        whileHover="hover"
-                        whileTap="tap"
-                        className="bg-gray-500/50 text-white px-6 py-3 rounded-lg hover:bg-gray-600/50 transition"
+                        <img
+                            src={`${baseImgUrl}${movie?.backdrop_path}`}
+                            alt={movie?.title}
+                            className="w-full h-full object-cover"
+                        />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="video"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.5 }}
+                        className="absolute inset-0 w-full h-full object-cover"
                     >
-                        More Info
-                    </motion.button>
-                </motion.div>
-            </motion.div>
+                        <VideoPlayer
+                            id={movie?.id}
+                            isPlaying={isPlaying}
+                            setIsPlaying={setIsPlaying}
+                            videoRef={videoRef}
+                            mediaType="movie"
+                            trailer={trailer}
+                            setTrailer={setTrailer}
+                            volume={audio}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* Bottom Gradient */}
-            <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black to-transparent"
-            />
+            {/* Content Overlay */}
+            <div className="absolute inset-y-64 md:inset-y-2/3 lg:inset-y-2/3 z-10">
+                <div className="container mx-auto h-full flex flex-col justify-center px-4 md:px-8 lg:px-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.8 }}
+                        className="max-w-2xl space-y-3"
+                    >
+                        {movieTitle ? (
+                            <motion.div 
+                                className="w-[150px] md:w-[300px] lg:w-[400px] mb-4"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.7, duration: 0.8 }}
+                            >
+                                <img 
+                                    src={movieTitle} 
+                                    alt={movie?.title}
+                                    className="w-full h-auto object-contain"
+                                    loading="lazy"
+                                />
+                            </motion.div>
+                        ) : (
+                            <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold text-white">
+                                {movie?.title}
+                            </h1>
+                        )}
+                        <p className="text-[14px] md:text-md lg:text-lg text-gray-200 line-clamp-3">
+                            {movie?.overview}
+                        </p>
+                        <div className="flex items-center gap-4 pt-4 w-fit">
+                            <button 
+                                className="bg-white text-black px-8 py-2 rounded-md flex items-center gap-2 hover:bg-white/90 transition"
+                                onClick={() => setIsPlaying(!isPlaying)}
+                            >
+                                Play
+                            </button>
+                            <button 
+                                onClick={() => setAudio(audio ? 0 : 1)}
+                                className="bg-gray-500/50 text-white px-8 py-2 rounded-md hover:bg-gray-600/50 transition"
+                            >
+                                Details
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+
+            {/* Volume Control Button - Only visible on large screens */}
+            {isLargeScreen && (
+                <div 
+                    className="absolute bottom-[16px] right-[100px] lg:bottom-[110px] lg:right-[120px] z-30"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setAudio(prev => !prev);
+                    }}
+                >
+                    <FontAwesomeIcon 
+                        icon={audio ? faVolumeHigh : faVolumeOff} 
+                        className="text-white text-2xl cursor-pointer transition-transform transform hover:scale-110"
+                    />
+                </div>
+            )}
+
+            {/* Age Rating Indicator - Only visible on large screens */}
+            {isLargeScreen && (
+                <div className="bg-black bg-opacity-25 border-white border-l-[5px] w-fit right-0 top-[75%] md:top-[82%] lg:top-[79%] absolute pr-12 px-2 py-2 rounded-lg z-30">
+                    <h1 className="text-white text-lg font-semibold">{movie?.adult ? '18+' : 'Any'}
+                    </h1>
+                </div>
+            )}
         </motion.header>
     );
 }

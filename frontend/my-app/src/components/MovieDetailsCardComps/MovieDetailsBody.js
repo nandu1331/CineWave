@@ -116,7 +116,7 @@ export default function DetailsBody({ details, mediaType }) {
             <motion.strong>
                 About the Movie
             </motion.strong>
-            <motion.span className="flex gap-2">Release Date: <p className="font-semibold">{details.release_date || "No franchise available."}</p></motion.span>
+            <motion.span className="flex gap-2">Release Date: <p className="font-semibold">{details.release_date || "NaN"}</p></motion.span>
             <motion.h3>Produced By:</motion.h3>
             <motion.p className="flex flex-wrap text-white text-sm">
                {Array.isArray(details.production_companies) && details.production_companies.length > 0 ? (

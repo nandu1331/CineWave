@@ -44,6 +44,7 @@ export default function VideoPlayer({
                         progressInterval={1000}
                         onProgress={progressHandler}
                         volume={volume}
+                        pre
                     />
                 </div>
             }
