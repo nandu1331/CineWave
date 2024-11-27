@@ -128,6 +128,16 @@ export default function App() {
                             <Login />
                         </motion.div>
                     } />
+                    <Route path="/register" element={
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Register />
+                        </motion.div>
+                    } />
                     {/* ... other routes remain the same */}
                     <Route path="/" element={
                         <ProtectedRoute>
