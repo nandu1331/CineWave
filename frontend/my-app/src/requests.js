@@ -8,6 +8,7 @@ const requests = {
         fetchTvshowsOnTheAir: `tv/on_the_air`,
         fetchTvshowsPopular: `tv/popular`,
         fetchTvshowsToprated: `tv/top_rated`,
+        fetchNowPlaying: `trending/all/day`
     }
 
 export default requests

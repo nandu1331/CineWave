@@ -91,7 +91,7 @@ const CategoryContent = ({ category }) => {
                     <Row title="Top-Rated" fetchUrl={requests.fetchMovieToprated} media_type={'Movie'}/>
                     <Row title="Upcoming" fetchUrl={requests.fetchMovieUpcoming} media_type={'Movie'}/>
                     <Row title="Anime" fetchUrl={requests.fetchAnime} media_type={'Anime'}/>
-                    <Row title="Tv shows" fetchUrl={requests.fetchTvShows} media_type={'TV'}/>
+                    <Row title="Tv shows" fetchUrl={requests.fetchTvshowsToprated} media_type={'TV'}/>
                 </motion.div>
             );
     }
