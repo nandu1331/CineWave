@@ -270,7 +270,7 @@ export default function Banner({ media_type = 'Movie' }) {
                             isPlaying={isPlaying}
                             setIsPlaying={setIsPlaying}
                             videoRef={videoRef}
-                            mediaType="movie"
+                            mediaType={media_type === 'Movie' ? 'movie' : 'tv'}
                             trailer={trailer}
                             setTrailer={setTrailer}
                             volume={audio}
