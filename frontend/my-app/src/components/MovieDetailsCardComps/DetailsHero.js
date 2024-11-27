@@ -10,6 +10,7 @@ export default function DetailsHero({ details, mediaType }) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [audio, setAudio] = useState(1);
     const [movieTitle, setMovieTitle] = useState(null);
+    const [videoProgress, setVideoProgress] = useState(0);
     const videoRef = useRef(null);
     const baseImgUrl = "https://image.tmdb.org/t/p/original/";
     const imageUrl = `${baseImgUrl}${details?.backdrop_path}`;
@@ -117,6 +118,16 @@ export default function DetailsHero({ details, mediaType }) {
         return () => clearTimeout(autoPlayTimer);
     }, []);
 
+    useEffect(() => {
+        setVideoProgress(0);
+        setIsPlaying(false);
+
+        return () => {
+            setVideoProgress(0);
+        };
+    }, [trailer]);
+
+
     const handleClick = () => {
         setIsPlaying(prev => !prev);
     };
@@ -165,6 +176,8 @@ export default function DetailsHero({ details, mediaType }) {
                             trailer={trailer}
                             setTrailer={setTrailer}
                             volume={audio ? 1 : 0}
+                            videoProgress={videoProgress}
+                            setVideoProgress={setVideoProgress}
                         />
                     </motion.div>
                 )}

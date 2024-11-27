@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import tmdbAxios from "axios";
 import requests from "../requests";
@@ -6,46 +6,173 @@ import ShimmerBanner from "./shimmerComps/shimmerBanner";
 import VideoPlayer from "./VideoPlayer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVolumeHigh, faVolumeOff } from "@fortawesome/free-solid-svg-icons";
+import PropTypes from 'prop-types'; // Add PropTypes
 
-export default function Banner() {
+export default function Banner({ media_type = 'Movie' }) {
+    // Add error state
+    const [error, setError] = useState(null);
     const [movie, setMovie] = useState(null);
     const [loading, setLoading] = useState(true);
     const [trailer, setTrailer] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [audio, setAudio] = useState(0); // Start muted
+    const [audio, setAudio] = useState(1);
     const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
     const [movieTitle, setMovieTitle] = useState(null);
-    const videoRef = useRef(null);
-    const baseImgUrl = "https://image.tmdb.org/t/p/original/";
-    const apikey = process.env.REACT_APP_API_KEY;
+    const [videoProgress, setVideoProgress] = useState(0);
+    const [imageLoaded, setImageLoaded] = useState(false);
     
-    const fetchMovieLogo = async (movieId) => {
-    try {
-        const imagesEndPoint = `https://api.themoviedb.org/3/movie/${movieId}/images`;
-        const imagesResponse = await tmdbAxios.get(imagesEndPoint, {
-            params: {
-                api_key: apikey,
-            }
-        });
+    // Refs
+    const imagePreloadRef = useRef(null);
+    const videoRef = useRef(null);
+    
+    // Memoized values
+    const baseImgUrl = useMemo(() => "https://image.tmdb.org/t/p/original/", []);
+    const apikey = process.env.REACT_APP_API_KEY;
 
-        const logos = imagesResponse.data.logos;
-        if (logos && logos.length > 0) {
-            // Just get the first English logo, or fallback to any logo
-            const englishLogo = logos.find(logo => logo.iso_639_1 === 'en');
-            const selectedLogo = englishLogo || logos[0];
-            const logoPath = `https://image.tmdb.org/t/p/original${selectedLogo.file_path}`;
-            setMovieTitle(logoPath);
-        } else {
-            // If no logos available, fall back to null (will show text title)
+    // Memoize trailer priorities
+    const trailerPriorities = useMemo(() => [
+        video => video.type === 'Trailer' && video.site === 'YouTube' && video.official === true,
+        video => video.type === 'Trailer' && video.site === 'YouTube',
+        video => video.type === 'Teaser' && video.site === 'YouTube'
+    ], []);
+
+    // Memoize handlers
+    const handleBannerClick = useCallback(() => {
+        if (isLargeScreen) {
+            setIsPlaying(!isPlaying);
+        }
+    }, [isLargeScreen, isPlaying]);
+
+    const handleTouchStart = useCallback(() => {
+        if (isLargeScreen) {
+            setIsPlaying(!isPlaying);
+        }
+    }, [isLargeScreen, isPlaying]);
+
+    // Optimized image preloading
+    const preloadImage = useCallback((url) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = url;
+            img.onload = () => {
+                setImageLoaded(true);
+                resolve();
+            };
+            img.onerror = reject;
+        });
+    }, []);
+
+    // Modified fetchMovieLogo with better error handling
+    const fetchMovieLogo = useCallback(async (contentId) => {
+        try {
+            const imagesEndPoint = `https://api.themoviedb.org/3/${
+                media_type === 'TV' ? 'tv' : 'movie'
+            }/${contentId}/images`;
+            
+            const imagesResponse = await tmdbAxios.get(imagesEndPoint, {
+                params: { api_key: apikey }
+            });
+
+            const logos = imagesResponse.data.logos;
+            if (logos?.length > 0) {
+                const englishLogo = logos.find(logo => logo.iso_639_1 === 'en');
+                const selectedLogo = englishLogo || logos[0];
+                const logoPath = `${baseImgUrl}${selectedLogo.file_path}`;
+                setMovieTitle(logoPath);
+            } else {
+                setMovieTitle(null);
+            }
+        } catch (error) {
+            console.error("Error fetching movie logo:", error);
             setMovieTitle(null);
         }
-    } catch (error) {
-        console.error("Error fetching movie logo:", error);
-        setMovieTitle(null);
-    }
-};
+    }, [media_type, apikey, baseImgUrl]);
 
+    // Modified fetchMovieTrailer with better error handling
+    const fetchMovieTrailer = useCallback(async (contentId) => {
+        try {
+            const endpoint = `https://api.themoviedb.org/3/${
+                media_type === 'TV' ? 'tv' : 'movie'
+            }/${contentId}/videos?api_key=${apikey}`;
+            
+            const response = await tmdbAxios.get(endpoint);
+            
+            for (let priority of trailerPriorities) {
+                const matchingTrailer = response.data.results?.find(priority);
+                if (matchingTrailer) {
+                    setTrailer(matchingTrailer);
+                    break;
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching trailer:", error);
+            setError("Failed to load trailer");
+        }
+    }, [media_type, apikey, trailerPriorities]);
 
+    // Main fetch effect with cleanup
+    useEffect(() => {
+        let isMounted = true;
+        
+        const fetchMovie = async () => {
+            setLoading(true);
+            setError(null);
+            
+            try {
+                const endpoint = media_type === 'TV' ? 'tv/popular' : 'movie/popular';
+                const url = `https://api.themoviedb.org/3/${endpoint}`;
+                
+                const res = await tmdbAxios.get(url, {
+                    params: {
+                        api_key: apikey,
+                        ...requests.params,
+                    },
+                });
+
+                if (!isMounted) return;
+
+                const randomContent = res.data.results[
+                    Math.floor(Math.random() * res.data.results.length)
+                ];
+
+                const detailedEndpoint = media_type === 'TV' 
+                    ? `tv/${randomContent.id}` 
+                    : `movie/${randomContent.id}`;
+                
+                const detailedRes = await tmdbAxios.get(
+                    `https://api.themoviedb.org/3/${detailedEndpoint}`,
+                    { params: { api_key: apikey } }
+                );
+
+                if (!isMounted) return;
+
+                const contentData = detailedRes.data;
+                await preloadImage(`${baseImgUrl}${contentData.backdrop_path}`);
+                
+                if (isMounted) {
+                    setMovie(contentData);
+                    await Promise.all([
+                        fetchMovieLogo(contentData.id),
+                        isLargeScreen && fetchMovieTrailer(contentData.id)
+                    ]);
+                    setLoading(false);
+                }
+            } catch (err) {
+                if (isMounted) {
+                    console.error("Error fetching data:", err);
+                    setError("Failed to load content. Please try again later.");
+                    
+                }
+            }
+        };
+
+        fetchMovie();
+        return () => {
+            isMounted = false;
+        };
+    }, [apikey, media_type, baseImgUrl, fetchMovieLogo, fetchMovieTrailer, isLargeScreen, preloadImage]);
+
+    // Screen size effect
     useEffect(() => {
         const handleResize = () => {
             setIsLargeScreen(window.innerWidth >= 1024);
@@ -57,85 +184,43 @@ export default function Banner() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-    
-    // Fetch initial movie data
+
+    // Video progress reset effect
     useEffect(() => {
-        const fetchMovie = async () => {
-            setLoading(true);
-            try {
-                const url = `https://api.themoviedb.org/3/${requests.fetchPopular}`;
-                const res = await tmdbAxios.get(url, {
-                    params: {
-                        api_key: apikey,
-                        ...requests.params,
-                    },
-                });
-                const randomMovie = res.data.results[Math.floor(Math.random() * res.data.results.length)];
-                const detailedMovieRes = await tmdbAxios.get(`https://api.themoviedb.org/3/movie/${randomMovie.id}`, {
-                    params: {
-                        api_key: apikey,
-                    }
-                }); 
-                
-                const movieData = detailedMovieRes.data;
-                setMovie(movieData);
+        setVideoProgress(0);
+        setIsPlaying(false);
+        return () => setVideoProgress(0);
+    }, [trailer]);
 
-                // Fetch logo and trailer for the same movie
-                await Promise.all([
-                    fetchMovieLogo(movieData.id),
-                    fetchMovieTrailer(movieData.id)
-                ]);
-                setLoading(false);
-            } catch (err) {
-                console.error("Error fetching data:", err);
-                setLoading(false);
-            }
-        };
-        fetchMovie();
-    }, [apikey]);
-
-    // Fetch movie trailer
-    const fetchMovieTrailer = async (movieId) => {
-        try {
-            const endpoint = `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${apikey}`;
-            const response = await tmdbAxios.get(endpoint);
-            const trailerPriorities = [
-                video => video.type === 'Trailer' && video.site === 'YouTube' && video.official === true,
-                video => video.type === 'Trailer' && video.site === 'YouTube',
-                video => video.type === 'Teaser' && video.site === 'YouTube'
-            ];
-
-            for (let priority of trailerPriorities) {
-                const matchingTrailer = response.data.results?.find(priority);
-                if (matchingTrailer) {
-                    setTrailer(matchingTrailer);
-                    break;
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching trailer:", error);
-        }
-    };
-
-    // Auto-play trailer after delay
+    // Auto-play effect
     useEffect(() => {
+        if (!movie) return;
+        
         const timer = setTimeout(() => {
             setIsPlaying(true);
-        }, 3000); // 3 second delay before playing
+        }, 3000);
 
         return () => clearTimeout(timer);
     }, [movie]);
 
-    const handleBannerClick = () => {
-        if (isLargeScreen) {
-            setIsPlaying(!isPlaying);
-        }
-    };
-
+    // Loading and error states
     if (loading) {
-        return <ShimmerBanner />;
+        return (
+            <div className="relative h-[60vh] md:h-[80vh] lg:h-[95vh]">
+                <ShimmerBanner />
+            </div>
+        );
     }
 
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-[60vh] bg-black text-white">
+                <p>{error}</p>
+            </div>
+        );
+    }
+
+    // Rest of your render code remains the same, but add error boundaries
     return (
         <motion.header 
             initial={{ opacity: 0 }}
@@ -143,6 +228,7 @@ export default function Banner() {
             transition={{ duration: 0.5 }}
             className="relative h-[60vh] md:h-[80vh] lg:h-[95vh] w-full overflow-hidden"
             onClick={handleBannerClick}
+            onTouchStart={handleTouchStart}
         >
             {/* Background Overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10" />
@@ -154,17 +240,21 @@ export default function Banner() {
                     <motion.div
                         key="image"
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ opacity: imageLoaded ? 1 : 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1.5 }}
                         className="absolute inset-0 "
                         
                     >
-                        <img
-                            src={`${baseImgUrl}${movie?.backdrop_path}`}
-                            alt={movie?.title}
-                            className="w-full h-full object-cover"
-                        />
+                        {imageLoaded && (
+                            <img
+                                src={`${baseImgUrl}${movie?.backdrop_path || movie?.poster_path}`}
+                                alt={movie?.title}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                            
+                            />
+                        )}
                     </motion.div>
                 ) : (
                     <motion.div
@@ -184,6 +274,8 @@ export default function Banner() {
                             trailer={trailer}
                             setTrailer={setTrailer}
                             volume={audio}
+                            videoProgress={videoProgress}
+                            setVideoProgress={setVideoProgress}
                         />
                     </motion.div>
                 )}
@@ -209,7 +301,7 @@ export default function Banner() {
                                     src={movieTitle} 
                                     alt={movie?.title}
                                     className="w-full h-auto object-contain"
-                                    loading="lazy"
+                                    // loading="lazy"
                                 />
                             </motion.div>
                         ) : (
@@ -264,3 +356,8 @@ export default function Banner() {
         </motion.header>
     );
 }
+
+// Add PropTypes
+Banner.propTypes = {
+    media_type: PropTypes.oneOf(['Movie', 'TV']),
+};

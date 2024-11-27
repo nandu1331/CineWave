@@ -1,12 +1,74 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faCalendar, faClock } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faCalendar, faClock, faPlus, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { tmdbAxios } from "../../axios";
+import { djangoAxios } from "../../axios";
 import RecommendationCard from "./RecommendationCard";
+
 
 export default function DetailsBody({ details, mediaType }) {
     const [recommendations, setRecommendations] = useState([]);
+    const [isInList, setIsInList] = useState(false);
+    const [isAddingToList, setIsAddingToList] = useState(false);
+    
+    useEffect(() => {
+        const checkIfInList = async () => {
+            if (details?.id) {
+                try {
+                    const response = await djangoAxios.get('mylist/');
+                    const isMovieInList = response.data.some(item => 
+                        item.movie_id === details.id
+                    );
+                    setIsInList(isMovieInList);
+                } catch (error) {
+                    console.error('Error checking list status:', error);
+                }
+            }
+        };
+        
+        checkIfInList();
+    }, [details?.id]);
+
+     const handleListAction = async () => {
+        if (!details?.id) return;
+
+        setIsAddingToList(true);
+        try {
+            if (isInList) {
+                // Remove from list
+                await djangoAxios.delete(`mylist/remove/${details.id}/`);
+                setIsInList(false);
+            } else {
+                // Add to list
+                const movieData = {
+                    movie_id: details.id,
+                    title: details.title || details.name,
+                    poster_path: details.poster_path,
+                    media_type: mediaType
+                };
+                await djangoAxios.post('mylist/add/', movieData);
+                setIsInList(true);
+            }
+        } catch (error) {
+            if (error.response?.data?.non_field_errors?.[0].includes('unique set')) {
+                // Item already in list
+                setIsInList(true);
+            } else {
+                console.error('Error updating list:', error);
+            }
+        } finally {
+            setIsAddingToList(false);
+        }
+    };
+
+    const listButtonClasses = `
+        flex items-center gap-2 px-4 py-2 rounded-md
+        transition-all duration-300
+        ${isInList 
+            ? 'bg-gray-700 hover:bg-gray-600' 
+            : 'bg-white text-black hover:bg-gray-200'}
+    `;
 
     const formatRunTime = (runtime) => {
         if (!runtime) return "N/A";
@@ -62,6 +124,27 @@ export default function DetailsBody({ details, mediaType }) {
             variants={containerVariants}
             className="p-4 md:p-7 flex flex-col gap-6 bg-gradient-to-br from-neutral-900 to-black text-white rounded-2xl shadow-2xl"
         >
+            
+            <div className="flex gap-4 mt-4 lg:gap-12">
+                <button className='flex items-center gap-2 px-4 py-2 rounded-md
+                                    transition-all duration-300 bg-white text-black hover:bg-gray-200'
+                >
+                    Play
+                </button>
+                <button
+                    onClick={handleListAction}
+                    disabled={isAddingToList}
+                    className={listButtonClasses}
+                >
+                    <FontAwesomeIcon 
+                        icon={isInList ? faCheck : faPlus} 
+                        className={isAddingToList ? 'animate-spin' : ''}
+                    />
+                    {isInList ? 'Remove from List' : 'Add to List'}
+                </button>
+                {/* Your other button */}
+            </div>
+
             {/* Title Section */}
             <motion.h1 
                 variants={itemVariants}

@@ -8,9 +8,10 @@ export default function VideoPlayer({
     videoRef,
     mediaType,
     trailer,
-    volume
+    volume,
+    videoProgress,
+    setVideoProgress
 }) {
-    const [videoProgress, setVideoProgress] = useState(0);
 
     const handleVideoReady = () => {
         if (videoRef.current) {
@@ -22,9 +23,7 @@ export default function VideoPlayer({
         setVideoProgress(progress.playedSeconds);
         if (progress.played >= 0.85) {
             setIsPlaying(false);
-            if (videoRef.current) {
-                videoRef.current.seekTo(2, "seconds");
-            }
+            setVideoProgress(0);
         }
     };
 
@@ -41,10 +40,9 @@ export default function VideoPlayer({
                         width="100%"
                         onReady={handleVideoReady}
                         onPause={() => setIsPlaying(false)}
-                        progressInterval={1000}
+                        progressInterval={500}
                         onProgress={progressHandler}
                         volume={volume}
-                        pre
                     />
                 </div>
             }
