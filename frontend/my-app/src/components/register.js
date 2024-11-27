@@ -40,7 +40,7 @@ export default function Register() {
             return;
         }
         try {
-            const response = await djangoAxios.post('/register/', {
+            const response = await djangoAxios.post('register/', {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password
@@ -151,6 +151,7 @@ export default function Register() {
                                     name="username"
                                     id="username"
                                     placeholder="Username"
+                                    value={formData.username}
                                     onChange={(e) => setFormData({...formData, username: e.target.value})}
                                     className="w-full bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
                                     required
@@ -162,6 +163,7 @@ export default function Register() {
                                     type="email"
                                     name="email"
                                     id="email"
+                                    value={formData.email}
                                     placeholder="Email..."
                                     onChange={(e) => setFormData({...formData, username: e.target.value})}
                                     className="w-full px-4 py-2 bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -175,6 +177,7 @@ export default function Register() {
                                     name="password"
                                     id="password"
                                     placeholder="Password"
+                                    value={formData.password}
                                     onChange={(e) => setFormData({...formData, username: e.target.value})}
                                     className="w-full px-4 py-2 bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
                                     required
@@ -186,6 +189,7 @@ export default function Register() {
                                     type="text"
                                     name="confirmPassword"
                                     id="confirmPassword"
+                                    value={formData.confirmPassword}
                                     placeholder="Re-Type password"
                                     onChange={(e) => setFormData({...formData, username: e.target.value})}
                                     className="w-full px-4 py-2 bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
