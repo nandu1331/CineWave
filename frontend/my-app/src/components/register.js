@@ -65,6 +65,13 @@ export default function Register() {
         }
     };
 
+    const handleChange = (e) => {
+        setFormData(prev => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        }));
+    };
+
     const containerVariants = {
         initial: { opacity: 0},
         animate: { opacity: 1 },
@@ -151,8 +158,7 @@ export default function Register() {
                                     name="username"
                                     id="username"
                                     placeholder="Username"
-                                    value={formData.username}
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                    onChange={handleChange}
                                     className="w-full bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
                                     required
                                 />
@@ -163,9 +169,8 @@ export default function Register() {
                                     type="email"
                                     name="email"
                                     id="email"
-                                    value={formData.email}
                                     placeholder="Email..."
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2 bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
                                     required
                                 />
@@ -177,8 +182,7 @@ export default function Register() {
                                     name="password"
                                     id="password"
                                     placeholder="Password"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2 bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
                                     required
                                 />
@@ -189,9 +193,8 @@ export default function Register() {
                                     type="text"
                                     name="confirmPassword"
                                     id="confirmPassword"
-                                    value={formData.confirmPassword}
                                     placeholder="Re-Type password"
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2 bg-zinc-800 text-white rounded focus:outline-none focus:ring-2 focus:ring-white/50"
                                     required
                                 />
