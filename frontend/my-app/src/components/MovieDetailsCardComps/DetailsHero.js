@@ -32,10 +32,21 @@ export default function DetailsHero({ details, mediaType }) {
                 const data = response.data;
                 
                 const trailerPriorities = [
-                    video => video.type === 'Trailer' && video.site === 'YouTube' && video.official === true && (video.iso_639_1 === 'en' || !video.iso_639_1),
-                    video => video.type === 'Trailer' && video.site === 'YouTube' && video.official === true,
-                    video => video.type === 'Trailer' && video.site === 'YouTube' && (video.iso_639_1 === 'en' || !video.iso_639_1),
-                    video => video.type === 'Trailer' && video.site === 'YouTube'
+                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
+                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion') &&
+                              video.official === true &&
+                              (video.iso_639_1 === 'en' || !video.iso_639_1),
+                                
+                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
+                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion') &&
+                              video.official === true,
+                                
+                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
+                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion') &&
+                              (video.iso_639_1 === 'en' || !video.iso_639_1),
+                                
+                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
+                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion')
                 ];
 
                 for (let priority of trailerPriorities) {
