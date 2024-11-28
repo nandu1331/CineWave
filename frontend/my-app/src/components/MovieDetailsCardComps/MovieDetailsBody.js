@@ -5,6 +5,8 @@ import { faStar, faCalendar, faClock, faPlus, faCheck } from "@fortawesome/free-
 import { tmdbAxios } from "../../axios";
 import { djangoAxios } from "../../axios";
 import RecommendationCard from "./RecommendationCard";
+import Episodes from "./SeasonDetails";
+import SeasonDetails from "./SeasonDetails";
 
 
 export default function DetailsBody({ details, mediaType }) {
@@ -166,10 +168,10 @@ export default function DetailsBody({ details, mediaType }) {
                     <FontAwesomeIcon icon={faCalendar} className="text-blue-400" />
                     <span>{(details.release_date || details.first_air_date)?.split('-')[0] || "N/A"}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                {mediaType === 'movie' && <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faClock} className="text-green-400" />
                     <span>{formatRunTime(details?.runtime)}</span>
-                </div>
+                </div>}
             </motion.div>
 
             {/* Genres */}
@@ -196,11 +198,22 @@ export default function DetailsBody({ details, mediaType }) {
             >
                 {details.overview || "No overview available."}
             </motion.p>
-            <motion.strong>
+            {mediaType === 'tv' && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                >
+                    <SeasonDetails id={details?.id}/>
+                </motion.div>
+            )}
+
+            <motion.strong className="text-2xl">
                 About the Movie
             </motion.strong>
-            <motion.span className="flex gap-2">Release Date: <p className="font-semibold">{details.release_date || "NaN"}</p></motion.span>
-            <motion.h3>Produced By:</motion.h3>
+            <motion.span className="flex gap-2 font-semibold">First Air Date:  <p className="font-normal">{details.first_air_date || "NaN"}</p></motion.span>
+            <motion.span className="flex gap-2 font-semibold">Last Air Date:  <p className="font-normal">{details.last_air_date || "NaN"}</p></motion.span>
+            <motion.span className="flex gap-2 font-semibold">Produced By:</motion.span>
             <motion.p className="flex flex-wrap text-white text-sm">
                {Array.isArray(details.production_companies) && details.production_companies.length > 0 ? (
                    details.production_companies
@@ -217,12 +230,12 @@ export default function DetailsBody({ details, mediaType }) {
             </motion.p>
 
             {/* Recommendations Section */}
-            <motion.h2 
+            <motion.strong 
                 variants={itemVariants}
-                className="text-2xl md:text-3xl font-semibold mt-5 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400"
+                className="text-2xl md:text-3xl mt-5 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400"
             >
                 More like this : 
-            </motion.h2>
+            </motion.strong>
 
             {/* Recommendations Grid */}
             <motion.div 

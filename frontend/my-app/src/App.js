@@ -76,7 +76,23 @@ const CategoryContent = ({ category }) => {
                     <Row title="Top Rated" fetchUrl={`${requests.fetchTvshowsToprated}?sort_by=first_air_date.desc`} media_type={'TV'}/>
                 </motion.div>
             );
-        // ... other cases remain the same
+        case 'trending' :
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Banner media_type={'Movie' || 'TV'}/>
+                    <Row title="Trending Today" fetchUrl={requests.fetchTrendingToday} isBig={true} />
+                    <Row title="Trending this Week" fetchUrl={`${requests.fetchTrendingWeek}`} />
+                    <Row title="Trending Movies Today" fetchUrl={requests.fetchTrendingMoviesToday} media_type={'Movie'}/>
+                    <Row title="Trending Movies this Week" fetchUrl={requests.fetchTrendingMoviesWeek} media_type={'Movie'}/>
+                    <Row title="Trending TvShows Today" fetchUrl={`${requests.fetchTrendingTvShowsToday}`} media_type={'TV'}/>
+                    <Row title="Trending TvShows this Week" fetchUrl={`${requests.fetchTrendingTvShowsWeek}`} media_type={'TV'}/>
+                </motion.div>
+            );
         default:
             return (
                 <motion.div
