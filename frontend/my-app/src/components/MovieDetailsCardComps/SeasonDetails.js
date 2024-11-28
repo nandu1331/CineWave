@@ -90,7 +90,7 @@ export default function SeasonDetails({ id }) {
                         Episodes
                     </motion.h1>
                     <motion.select
-                        className="bg-neutral-900/95 px-4 py-2 border-white/20 border-2 rounded-md
+                        className="bg-neutral-900/95 px-4 py-2 w-full max-w-fit border-white/20 border-2 rounded-md
                                  hover:border-white/40 transition-all duration-300 cursor-pointer
                                  focus:outline-none focus:border-white/60"
                         onChange={(e) => setSelectedSeason(parseInt(e.target.value))}

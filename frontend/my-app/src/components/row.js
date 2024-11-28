@@ -160,11 +160,14 @@ export default function Row(props) {
             </div>
 
             {isModalOpen && selectedMovie && (
-                <MovieDetailsCard
+                <div className="w-11/12  md:w-9/12 lg:w-7/12 max-w-4xl">
+                    <MovieDetailsCard
                     movieId={selectedMovie.id}
                     onClose={closeModal}
                     mediaType={props.media_type || selectedMovie.media_type}
                 />
+                </div>
+                
             )}
         </div>
     );

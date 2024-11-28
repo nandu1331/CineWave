@@ -17,56 +17,138 @@ export default function DetailsHero({ details, mediaType }) {
     const API_KEY = process.env.REACT_APP_API_KEY;
 
     useEffect(() => {
-        async function fetchTrailer() {
-            try {
-                const endpoint = mediaType === "movie" ? 
-                    `movie/${details.id}/videos` : 
-                    `tv/${details.id}/videos`;
-                
-                const response = await tmdbAxios.get(endpoint, {
+    async function fetchTrailer() {
+        try {
+            // First try to fetch videos from TMDB
+            const tmdbEndpoint = mediaType === "movie" ? 
+                `movie/${details.id}/videos` : 
+                `tv/${details.id}/videos`;
+            
+            const response = await tmdbAxios.get(tmdbEndpoint, {
+                params: {
+                    api_key: API_KEY,
+                }
+            });
+
+            const videos = response.data.results || [];
+
+            // Define priority criteria for different types of videos
+            const trailerPriorities = [
+                // Priority 1: Official English Trailer/Teaser from verified sources
+                video => ({
+                    score: 100,
+                    match: video.type?.toLowerCase().includes('trailer') &&
+                           video.official === true &&
+                           (video.iso_639_1 === 'en' || !video.iso_639_1) &&
+                           video.site === 'YouTube' &&
+                           video.key
+                }),
+
+                // Priority 2: Official Trailer/Teaser (any language) from verified sources
+                video => ({
+                    score: 80,
+                    match: video.type?.toLowerCase().includes('trailer') &&
+                           video.official === true &&
+                           video.site === 'YouTube' &&
+                           video.key
+                }),
+
+                // Priority 3: English Teasers/Clips from verified sources
+                video => ({
+                    score: 60,
+                    match: (video.type?.toLowerCase().includes('teaser') || 
+                           video.type?.toLowerCase().includes('clip')) &&
+                           (video.iso_639_1 === 'en' || !video.iso_639_1) &&
+                           video.site === 'YouTube' &&
+                           video.key
+                }),
+
+                // Priority 4: Any official video content
+                video => ({
+                    score: 40,
+                    match: video.official === true &&
+                           video.site === 'YouTube' &&
+                           video.key
+                }),
+
+                // Priority 5: Any video content from YouTube
+                video => ({
+                    score: 20,
+                    match: video.site === 'YouTube' && video.key
+                })
+            ];
+
+            // Score and sort all videos
+            const scoredVideos = videos.map(video => {
+                let maxScore = 0;
+                for (let priority of trailerPriorities) {
+                    const result = priority(video);
+                    if (result.match && result.score > maxScore) {
+                        maxScore = result.score;
+                    }
+                }
+                return { ...video, score: maxScore };
+            });
+
+            // Sort by score and additional criteria
+            const sortedVideos = scoredVideos
+                .filter(video => video.score > 0)
+                .sort((a, b) => {
+                    // Primary sort by score
+                    if (b.score !== a.score) return b.score - a.score;
+                    
+                    // Secondary sort by publish date if available
+                    if (a.published_at && b.published_at) {
+                        return new Date(b.published_at) - new Date(a.published_at);
+                    }
+                    
+                    // Tertiary sort by vote count
+                    return (b.vote_count || 0) - (a.vote_count || 0);
+                });
+
+            if (sortedVideos.length > 0) {
+                setTrailer(sortedVideos[0]);
+            } else {
+                // If no videos found on TMDB, try fallback search
+                const fallbackSearch = await tmdbAxios.get(`search/${mediaType}`, {
                     params: {
-                        api_key: API_KEY
+                        api_key: API_KEY,
+                        query: details.title || details.name,
+                        year: new Date(details.release_date || details.first_air_date).getFullYear()
                     }
                 });
 
-                const data = response.data;
-                
-                const trailerPriorities = [
-                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
-                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion') &&
-                              video.official === true &&
-                              (video.iso_639_1 === 'en' || !video.iso_639_1),
-                                
-                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
-                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion') &&
-                              video.official === true,
-                                
-                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
-                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion') &&
-                              (video.iso_639_1 === 'en' || !video.iso_639_1),
-                                
-                    video => (video.type === 'Trailer' || video.type === 'Teaser' || video.type === 'Official Trailer') &&
-                              (video.site === 'YouTube' || video.site === 'Vimeo' || video.site === 'Dailymotion')
-                ];
+                const alternativeId = fallbackSearch.data.results?.[0]?.id;
+                if (alternativeId && alternativeId !== details.id) {
+                    const alternativeVideos = await tmdbAxios.get(`${mediaType}/${alternativeId}/videos`, {
+                        params: {
+                            api_key: API_KEY,
+                            language: 'en-US'
+                        }
+                    });
 
-                for (let priority of trailerPriorities) {
-                    const matchingTrailer = data.results?.find(priority);
-                    if (matchingTrailer) {
-                        setTrailer(matchingTrailer);
-                        break;
+                    const fallbackVideo = alternativeVideos.data.results?.find(v => 
+                        v.site === 'YouTube' && 
+                        v.type?.toLowerCase().includes('trailer')
+                    );
+
+                    if (fallbackVideo) {
+                        setTrailer(fallbackVideo);
                     }
                 }
-
-            } catch (error) {
-                console.error("Error fetching trailer:", error);
-                setTrailer(null);
             }
-        }
 
-        if (details?.id) {
-            fetchTrailer();
+        } catch (error) {
+            console.error("Error fetching trailer:", error);
+            setTrailer(null);
         }
-    }, [details?.id, mediaType, API_KEY]);
+    }
+
+    if (details?.id) {
+        fetchTrailer();
+    }
+}, [details?.id, mediaType, API_KEY]);
+
 
     useEffect(() => {
         async function fetchMovieLogo() {
