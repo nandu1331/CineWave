@@ -8,7 +8,7 @@ import RecommendationCard from "./RecommendationCard";
 import SeasonDetails from "./SeasonDetails";
 
 
-export default function DetailsBody({ details, mediaType }) {
+export default function DetailsBody({ details, mediaType, isFullPage }) {
     const [recommendations, setRecommendations] = useState([]);
     const [isInList, setIsInList] = useState(false);
     const [isAddingToList, setIsAddingToList] = useState(false);
@@ -239,7 +239,7 @@ export default function DetailsBody({ details, mediaType }) {
             {/* Recommendations Grid */}
             <motion.div 
                 variants={containerVariants}
-                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 lg:gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-4 lg:gap-6"
             >
                 <AnimatePresence>
                     {recommendations?.slice(0, 9).map((item, index) => (

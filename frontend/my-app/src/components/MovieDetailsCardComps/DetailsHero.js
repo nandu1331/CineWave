@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVolumeHigh, faVolumeOff } from "@fortawesome/free-solid-svg-icons";
 import { tmdbAxios } from "../../axios";
 
-export default function DetailsHero({ details, mediaType }) {
+export default function DetailsHero({ details, mediaType, isFullPage }) {
     const [trailer, setTrailer] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audio, setAudio] = useState(1);
@@ -13,7 +13,8 @@ export default function DetailsHero({ details, mediaType }) {
     const [videoProgress, setVideoProgress] = useState(0);
     const videoRef = useRef(null);
     const baseImgUrl = "https://image.tmdb.org/t/p/original/";
-    const imageUrl = `${baseImgUrl}${details?.backdrop_path}`;
+    const backdropUrl = `${baseImgUrl}${details?.backdrop_path}`;
+    const posterUrl = `${baseImgUrl}${details?.poster_path}`;
     const API_KEY = process.env.REACT_APP_API_KEY;
 
     useEffect(() => {
@@ -226,7 +227,11 @@ export default function DetailsHero({ details, mediaType }) {
     };
 
     return (
-        <div className="relative h-[30vh] w-full md:h-[40vh] lg:h-[50vh] overflow-hidden">
+        <div className={`relative w-[100%] overflow-hidden ${
+            isFullPage 
+                ? "h-[30vh] md:h-[70vh] lg:h-[80vh]" 
+                : "h-[45vh] md:h-[50vh] lg:h-[55vh]"
+        }`}>
             <AnimatePresence initial={false}>
                 {!isPlaying && (
                     <motion.div
@@ -235,16 +240,20 @@ export default function DetailsHero({ details, mediaType }) {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1, ease: "linear" }}
                         className="relative h-full w-full overflow-hidden bg-cover"
-                        style={{ backgroundImage: `url(${imageUrl})` }}
+                        style={{ 
+                            backgroundImage: `url(${ 
+                                window.innerWidth < 768 
+                                    ? posterUrl 
+                                    : backdropUrl
+                            })`,
+                            backgroundPosition: window.innerWidth < 768 ? 'center' : '50% 35%'
+                        }}
                         onClick={handleClick}
                     >
-                        <motion.div 
-                            className="absolute inset-0 bg-black opacity-30" 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 0.3 }} 
-                            exit={{ opacity: 0 }} 
-                            transition={{ duration: 1 }} 
-                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90" />
+                        {window.innerWidth >= 768 && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent" />
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -256,7 +265,11 @@ export default function DetailsHero({ details, mediaType }) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1, ease: "linear" }}
-                        className="h-full lg:h-[400px] w-full overflow-hidden"
+                        className={`h-full w-full overflow-hidden ${
+                            isFullPage 
+                                ? 'scale-100' 
+                                : 'lg:scale-[1.2] xl:scale-[1.1]'
+                        }`}
                         onClick={handleClick}
                     >
                         <VideoPlayer 
@@ -277,7 +290,11 @@ export default function DetailsHero({ details, mediaType }) {
             </AnimatePresence>
 
             {movieTitle && (
-                <div className="absolute bottom-4 left-3 lg:bottom-10 lg:left-7 w-[90px] md:w-[130px]  max-w-[175px]">
+                <div className={`absolute ${
+                    isFullPage 
+                        ? 'bottom-8 left-6 md:bottom-12 md:left-10 lg:bottom-16 lg:left-14'
+                        : 'bottom-4 left-4 md:bottom-6 md:left-6 lg:bottom-8 lg:left-8'
+                    } w-[130px] md:w-[160px] lg:w-[200px] max-w-[220px]`}>
                     <img 
                         src={movieTitle} 
                         alt="Movie Logo"
@@ -288,15 +305,29 @@ export default function DetailsHero({ details, mediaType }) {
             )}
 
             {/* Volume Control Button */}
-            <div className="absolute bottom-[16px] right-[100px] lg:bottom-[40px] lg:right-[100px] z-10">
+            <div className={`absolute ${
+                isFullPage 
+                    ? 'bottom-5 right-16 md:bottom-16 md:right-20 lg:bottom-12 lg:right-20'
+                    : 'bottom-4 right-4 md:bottom-6 md:right-6 lg:bottom-10 lg:right-20'
+                } z-10`}>
                 <FontAwesomeIcon 
                     icon={audio ? faVolumeHigh : faVolumeOff} 
                     onClick={() => setAudio(prev => !prev)}
-                    className="text-2xl cursor-pointer transition-transform transform hover:scale-110"
+                    className="text-xl md:text-2xl lg:text-3xl cursor-pointer 
+                             transition-all duration-300 hover:scale-110
+                             text-white hover:text-red-600"
                 />
             </div>
-            <div className="bg-black bg-opacity-25 border-white border-l-[5px] w-fit right-0 top-[75%] md:top-[82%] lg:top-[79%] absolute pr-12 px-2 py-2 rounded-lg">
-                <h1 className="text-lg font-semibold">{details?.adult ? '18+' : 'Any'}</h1>
+            {/* Age Rating Badge */}
+            <div className={`absolute ${
+                isFullPage
+                    ? 'top-[75%] md:top-[80%] lg:top-[85%]'
+                    : 'top-[70%] md:top-[75%] lg:top-[80%]'
+                } right-0 bg-black/40 backdrop-blur-sm border-l-4 border-white
+                px-3 py-2 rounded-l-lg transition-all duration-300 hover:bg-black/60`}>
+                <h1 className="text-base md:text-lg font-semibold">
+                    {details?.adult ? '18+' : 'Any'}
+                </h1>
             </div>
         </div>
     );

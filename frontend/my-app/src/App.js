@@ -10,9 +10,8 @@ import requests from './requests';
 import Register from './components/register';
 import MyList from './components/MyList';
 import ShimmerBanner from './components/shimmerComps/shimmerBanner';
-import BrowseContent from './components/BrowseContent';
-import { useSearchParams } from 'react-router-dom';
 import SearchResults from './components/SearchResults';
+import MovieDetailsCard from './components/MovieDetailsCardComps/DetailsCard';
 
 // Create a separate component for category content
 const CategoryContent = ({ category }) => {
@@ -194,6 +193,10 @@ export default function App() {
                     <Route 
                         path="/browse/search" 
                         element={<SearchResults />} 
+                    />
+                    <Route
+                        path="/:media_type/:id" 
+                        element={<MovieDetailsCard />}
                     />
                 </Routes>
             </AnimatePresence>

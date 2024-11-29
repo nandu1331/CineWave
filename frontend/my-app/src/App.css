@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-.App {
+/* .App {
   text-align: center;
-}
+} */
 
 .app {
   background: black;
