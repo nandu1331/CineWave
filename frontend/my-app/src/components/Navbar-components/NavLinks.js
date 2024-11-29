@@ -56,7 +56,7 @@ export default function NavLinks({ isMobile, onLinkClick }) {
                         {link.isLogo ? (
                             <img 
                                 src={link.icon} 
-                                className={`h-full w-40 pr-11 ${isMobile ? 'mx-auto pr-0 w-32' : ''}`} 
+                                className={`h-full w-40 pr-0 ${isMobile ? 'mx-auto' : 'pr-11'}`} 
                                 alt="Logo" 
                             />
                         ) : (

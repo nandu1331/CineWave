@@ -114,6 +114,23 @@ export default function Navbar() {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        } else {            document.body.style.overflow = 'unset';
+            document.body.style.position = 'static';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+            document.body.style.position = 'static';
+            document.body.style.width = 'auto';
+        };
+    }, [isMobileMenuOpen]);
+
+
     return (
         <motion.nav
             initial="initial"
@@ -173,7 +190,8 @@ export default function Navbar() {
                             animate="open"
                             exit="closed"
                             variants={menuVariants}
-                            className="lg:hidden fixed inset-0 top-[65px] bg-black/95 backdrop-blur-sm"
+                            className="lg:hidden fixed inset-0 top-[65px] bg-black/95 backdrop-blur-sm 
+                                      overflow-y-auto max-h-[calc(100vh-65px)] overscroll-none"
                         >
                             <div className="p-4 flex flex-col space-y-4 items-center justify-center">           
                                 <SearchBar isMobile={true} />
@@ -185,6 +203,7 @@ export default function Navbar() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
             </div>
         </motion.nav>
     );
