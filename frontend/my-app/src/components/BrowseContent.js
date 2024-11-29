@@ -1,68 +1,56 @@
-// src/components/BrowseContent.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { djangoAxios, tmdbAxios } from '../axios';
-import YouTube from 'react-youtube';
+import { useNavigate } from 'react-router-dom';
+import { tmdbAxios } from '../axios';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faCheck, faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faCirclePlay } from "@fortawesome/free-solid-svg-icons";
+import { motion, AnimatePresence } from "framer-motion";
 import ShimmerBrowseContent from './shimmerComps/shimmerBrowseContent';
-import ShimmerImage from './shimmerComps/shimmerImage';
 
-export default function BrowseContent() {
+const baseImgUrl = "https://image.tmdb.org/t/p/w500";
+
+export default function BrowseContent({ searchQuery = "" }) {
     const navigate = useNavigate();
     const [content, setContent] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [loadedImages, setLoadedImages] = useState({});
     const [error, setError] = useState(null);
-    const [trailerUrl, setTrailerUrl] = useState('');
-    const [addedItems, setAddedItems] = useState({});
-    const { category } = useParams();
-    const baseImgUrl = "https://image.tmdb.org/t/p/original/";
-
-
-    const opts = {
-        height: '390',
-        width: '100%',
-        playerVars: {
-            autoplay: 1,
-            controls: 1,
-        }
-    };
+    const [loadedImages, setLoadedImages] = useState({});
 
     useEffect(() => {
         const fetchContent = async () => {
             setLoading(true);
             try {
-                let endpoint;
-                switch (category) {
-                    case 'movies':
-                        endpoint = 'discover/movie';
-                        break;
-                    case 'tvshows':
-                        endpoint = 'discover/tv';
-                        break;
-                    case 'trending':
-                        endpoint = 'trending/all/week';
-                        break;
-                    default:
-                        endpoint = 'discover/movie';
-                }
+                const response = await tmdbAxios.get('search/multi', {
+                    params: {
+                        query: searchQuery,
+                        include_adult: false,
+                        language: "en-US",
+                        page: 1
+                    }
+                });
 
-                const response = await tmdbAxios.get(endpoint);
-                setContent(response.data.results);
+                const filteredResults = response.data.results.filter(
+                    item => item.media_type !== "person" && item.poster_path
+                );
+
+                setContent(filteredResults);
+                setError(null);
             } catch (error) {
-                setError('Failed to fetch content');
                 console.error('Error:', error);
+                setError('Failed to fetch content');
             } finally {
                 setLoading(false);
-             }
+            }
         };
 
-        fetchContent();
-    }, [category]);
+        if (searchQuery) {
+            fetchContent();
+        } else {
+            setContent([]);
+        }
+    }, [searchQuery]);
 
     const handleItemClick = (item) => {
-        navigate(`movie/${item.id}`);
+        navigate(`/${item.media_type}/${item.id}`);
     };
 
     const handleImageLoad = (itemId) => {
@@ -72,140 +60,102 @@ export default function BrowseContent() {
         }));
     };
 
-    useEffect(() => {
-        const fetchMyList = async () => {
-            try {
-                const response = await djangoAxios.get('mylist/');
-                const myListItems = {};
-                response.data.forEach(item => {
-                    myListItems[item.movie_id] = true;
-                });
-                setAddedItems(myListItems);
-            } catch (error) {
-                console.error('Error fetching my list:', error);
-            }
-        };
-
-        fetchMyList();
-    }, []);
-
-    const addToList = async (item) => {
-        try {
-            const movieData = {
-                movie_id: item.id,
-                title: item.title || item.name,
-                poster_path: item.poster_path
-            };
-
-            await djangoAxios.post('mylist/add/', movieData);
-            // Update local state to show check icon
-            setAddedItems(prev => ({
-                ...prev,
-                [item.id]: true
-            }));
-        } catch (error) {
-            if (error.response?.data?.non_field_errors?.[0].includes('unique set')) {
-                alert('This movie is already in your list!');
-            } else {
-                console.error('Error adding to list:', error);
-                alert('Failed to add to list');
-            }
-        }
-    };
-
-
     if (loading) {
-        return (
-            <ShimmerBrowseContent />
-        )
+        return <ShimmerBrowseContent />;
     }
 
     if (error) {
-        return <div className="h-screen flex items-center justify-center">
-            <div className="text-white text-2xl">{error}</div>
-        </div>;
+        return (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="h-screen flex items-center justify-center"
+            >
+                <div className="bg-red-500/10 border border-red-500 text-red-500 px-6 py-4 rounded-lg">
+                    {error}
+                </div>
+            </motion.div>
+        );
     }
 
     return (
-        <div className="pt-20 min-h-screen bg-black">
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="pt-20 min-h-screen bg-black/95"
+        >
             <div className="container mx-auto px-4">
-                <h1 className="text-3xl font-bold text-white mb-8 capitalize">
-                    {category || 'Movies'}
-                </h1>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pb-10">
-                    {content.map((item) => (
-                        <div 
-                            key={item.id} 
-                            className="relative group cursor-pointer"
-                            onClick={() => handleItemClick(item)}
-                        >
-                            <div className='relative'>
-                                {!loadedImages[item.id] && <ShimmerImage />}
-                                <img
-                                    className={`w-full h-auto rounded-md scale-90 group-hover:scale-100 transition-all duration-300 ease-in-out
-                                    ${loadedImages[item.id] ? 'opacity-100' : 'opacity-0'}`}
-                                    src={`${baseImgUrl}${item.poster_path}`}
-                                    alt={item.title || item.name}
-                                    onLoad={() => handleImageLoad(item.id)}
-                                />
-                            </div>
-                            <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t  from-black opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
-                            <h3 className="text-white text-lg font-semibold">
-                                {item.title || item.name}
-                            </h3>
-                            <p className="text-gray-300 text-sm align-middle flex flex-row items-center gap-1">
-                                <FontAwesomeIcon icon={faStar}/> {item.vote_average.toFixed(1)}
-                            </p>
-                            <div
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (!addedItems[item.id]) {
-                                        addToList(item);
-                                    }
-                                }}
-                                className={`
-                                    absolute right-3 bottom-72
-                                    bg-black/50 hover:bg-black/75
-                                    p-2 rounded-md
-                                    transform transition-all duration-300
-                                    opacity-0 group-hover:opacity-100
-                                    ${addedItems[item.id] 
-                                        ? 'cursor-default ring-2 ring-green-500 ring-opacity-50' 
-                                        : 'cursor-pointer hover:scale-110 active:scale-95'
-                                    }
-                                `}
-                            >
-                                <FontAwesomeIcon 
-                                    icon={addedItems[item.id] ? faCheck : faPlus} 
-                                    className={`
-                                        transition-all duration-300 ease-in-out
-                                        text-lg
-                                        ${addedItems[item.id]
-                                            ? 'text-green-500'
-                                            : 'text-white group-hover:text-white/90'
-                                        }
-                                    `}
-                                />
-                            </div>
-
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                {trailerUrl && (
-                    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
-                        <div className="relative">
-                            <button 
-                                onClick={() => setTrailerUrl('')}
-                                className="absolute -top-10 right-0 text-white bg-red-600 px-4 py-2 rounded"
-                            >
-                                Close
-                            </button>
-                            <YouTube videoId={trailerUrl} opts={opts} />
-                        </div>
-                    </div>
+                {searchQuery && (
+                    <motion.h1 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-3xl font-bold text-white mb-8"
+                    >
+                        Search results for "{searchQuery}"
+                    </motion.h1>
                 )}
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pb-10">
+                    <AnimatePresence>
+                        {content.map((item, index) => (
+                            <motion.div
+                                key={item.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="relative group cursor-pointer"
+                                onClick={() => handleItemClick(item)}
+                            >
+                                <div className="relative overflow-hidden rounded-lg">
+                                    {!loadedImages[item.id] && (
+                                        <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded-lg" />
+                                    )}
+                                    <motion.img
+                                        className={`w-full h-auto rounded-lg transition-all duration-300
+                                                  ${loadedImages[item.id] ? 'opacity-100' : 'opacity-0'}`}
+                                        src={`${baseImgUrl}${item.poster_path}`}
+                                        alt={item.title || item.name}
+                                        loading="lazy"
+                                        onLoad={() => handleImageLoad(item.id)}
+                                        whileHover={{ scale: 1.05 }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                            <motion.div
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                                className="text-white/90"
+                                            >
+                                                <FontAwesomeIcon icon={faCirclePlay} className="text-5xl" />
+                                            </motion.div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <motion.div 
+                                    className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileHover={{ opacity: 1, y: 0 }}
+                                >
+                                    <h3 className="text-white text-lg font-semibold truncate">
+                                        {item.title || item.name}
+                                    </h3>
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-md text-sm" >
+                                            <FontAwesomeIcon icon={faStar} />
+                                            {item.vote_average?.toFixed(1)}
+                                        </span>
+                                        <span className="text-gray-400 text-sm capitalize">
+                                            {item.media_type}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
             </div>
-        </div>
+        </motion.div>
     );
 }

@@ -3,17 +3,21 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Login from './components/login';
 import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
+import Navbar from './components/Navbar-components/Navbar';
 import Banner from './components/Banner';
-import Row from './components/row';
+import Row from './components/row'; 
 import requests from './requests';
 import Register from './components/register';
 import MyList from './components/MyList';
 import ShimmerBanner from './components/shimmerComps/shimmerBanner';
+import BrowseContent from './components/BrowseContent';
+import { useSearchParams } from 'react-router-dom';
+import SearchResults from './components/SearchResults';
 
 // Create a separate component for category content
 const CategoryContent = ({ category }) => {
     const [isLoading, setIsLoading] = useState(true);
+    
 
     useEffect(() => {
         setIsLoading(true);
@@ -154,7 +158,6 @@ export default function App() {
                             <Register />
                         </motion.div>
                     } />
-                    {/* ... other routes remain the same */}
                     <Route path="/" element={
                         <ProtectedRoute>
                             <MainLayout />
@@ -188,6 +191,10 @@ export default function App() {
                             </motion.div>
                         </ProtectedRoute>
                     } />
+                    <Route 
+                        path="/browse/search" 
+                        element={<SearchResults />} 
+                    />
                 </Routes>
             </AnimatePresence>
         </Router>

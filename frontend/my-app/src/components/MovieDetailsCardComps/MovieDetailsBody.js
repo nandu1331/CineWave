@@ -5,7 +5,6 @@ import { faStar, faCalendar, faClock, faPlus, faCheck } from "@fortawesome/free-
 import { tmdbAxios } from "../../axios";
 import { djangoAxios } from "../../axios";
 import RecommendationCard from "./RecommendationCard";
-import Episodes from "./SeasonDetails";
 import SeasonDetails from "./SeasonDetails";
 
 
