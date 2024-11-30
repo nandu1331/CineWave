@@ -1,11 +1,41 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { tmdbAxios } from "../../axios";
-import DetailsHero from "./DetailsHero"
-import DetailsBody from "./MovieDetailsBody"
+import DetailsHero from "./DetailsHero";
+import DetailsBody from "./MovieDetailsBody";
 import { useParams } from "react-router-dom";
+
+// Shimmer Component for Hero
+const HeroShimmer = ({ isFullPage }) => {
+    const containerClasses = isFullPage 
+        ? "w-full h-[500px]" 
+        : "w-full h-[400px]";
+
+    return (
+        <div className={`${containerClasses} bg-neutral-800 animate-pulse`}>
+            <div className="absolute inset-0 bg-gradient-to-r from-neutral-700 via-neutral-600 to-neutral-700 shimmer"></div>
+        </div>
+    );
+};
+
+// Shimmer Component for Body
+const BodyShimmer = ({ isFullPage }) => {
+    return (
+        <div className="p-4 space-y-4">
+            {[1, 2, 3, 4].map((item) => (
+                <div 
+                    key={item} 
+                    className="w-full h-20 bg-neutral-800 animate-pulse rounded-md"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-neutral-700 via-neutral-600 to-neutral-700 shimmer"></div>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
     const [movieDetails, setMovieDetails] = useState({});
+    const [isLoading, setIsLoading] = useState(true);
     const params = useParams();
     
     // Use either props or params, with props taking precedence
@@ -29,6 +59,7 @@ export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
         const fetchDetails = async (id) => {
             if (!id) return;
 
+            setIsLoading(true);
             try {
                 let response;
                 const mediaTypeFormatted = activeMediaType?.toLowerCase();
@@ -38,6 +69,8 @@ export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
                 setMovieDetails(response.data);
             } catch (error) {
                 console.error("Error fetching details:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -70,17 +103,43 @@ export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
                         ✕
                     </button>
                 )}
-                <DetailsHero 
-                    details={movieDetails} 
-                    mediaType={activeMediaType?.toLowerCase() === 'movie' ? 'movie' : 'tv'}
-                    isFullPage={isFullPage}
-                />
-                <DetailsBody 
-                    details={movieDetails} 
-                    mediaType={activeMediaType?.toLowerCase() === 'movie' ? 'movie' : 'tv'}
-                    isFullPage={isFullPage}
-                />
+                
+                {isLoading ? (
+                    <>
+                        <HeroShimmer isFullPage={isFullPage} />
+                        <BodyShimmer isFullPage={isFullPage} />
+                    </>
+                ) : (
+                    <>
+                        <DetailsHero 
+                            details={movieDetails} 
+                            mediaType={activeMediaType?.toLowerCase() === 'movie' ? 'movie' : 'tv'}
+                            isFullPage={isFullPage}
+                        />
+                        <DetailsBody 
+                            details={movieDetails} 
+                            mediaType={activeMediaType?.toLowerCase() === 'movie' ? 'movie' : 'tv'}
+                            isFullPage={isFullPage}
+                        />
+                    </>
+                )}
             </div>
         </div>
     );
 }
+
+// // Add this to your global CSS or Tailwind config
+// const shimmerStyles = `
+//     @keyframes shimmer {
+//         0% {
+//             transform: translateX(-100%);
+//         }
+//         100% {
+//             transform: translateX(100%);
+//         }
+//     }
+
+//     .shimmer {
+//         animation: shimmer 1.5s infinite linear;
+//     }
+// `;

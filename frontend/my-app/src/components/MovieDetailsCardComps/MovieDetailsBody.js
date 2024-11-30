@@ -8,45 +8,11 @@ import RecommendationCard from "./RecommendationCard";
 import SeasonDetails from "./SeasonDetails";
 import { Link } from "react-router-dom";
 
-const Shimmer = ({ type }) => {
-    const shimmerClasses = "bg-gradient-to-r from-neutral-700 via-neutral-600 to-neutral-700 animate-shimmer";
-
-    switch (type) {
-        case 'title':
-            return <div className={`h-10 w-3/4 ${shimmerClasses} rounded-md`}></div>;
-        
-        case 'info':
-            return <div className={`h-6 w-1/2 ${shimmerClasses} rounded-md`}></div>;
-        
-        case 'overview':
-            return (
-                <div className="space-y-3">
-                    <div className={`h-4 w-full ${shimmerClasses} rounded-md`}></div>
-                    <div className={`h-4 w-5/6 ${shimmerClasses} rounded-md`}></div>
-                    <div className={`h-4 w-4/5 ${shimmerClasses} rounded-md`}></div>
-                </div>
-            );
-        
-        case 'recommendations':
-            return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {[...Array(9)].map((_, index) => (
-                        <div key={index} className={`h-64 w-full ${shimmerClasses} rounded-md`}></div>
-                    ))}
-                </div>
-            );
-        
-        default:
-            return null;
-    }
-};
-
 
 export default function DetailsBody({ details, mediaType, isFullPage }) {
     const [recommendations, setRecommendations] = useState([]);
     const [isInList, setIsInList] = useState(false);
     const [isAddingToList, setIsAddingToList] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
 
      useEffect(() => {
         window.scrollTo(0, 0);
@@ -69,7 +35,6 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
         
         checkIfInList();
 
-        setIsLoading(false);
     }, [details?.id]);
 
      const handleListAction = async () => {
@@ -158,25 +123,6 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
             }
         }
     };
-
-    if (isLoading) {
-        return (
-            <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="p-4 md:p-7 flex flex-col gap-6 bg-gradient-to-br from-neutral-900 to-black text-white rounded-2xl shadow-2xl"
-            >
-                <div className="flex gap-4 mt-4 lg:gap-12">
-                    <Shimmer type="info" />
-                    <Shimmer type="info" />
-                </div>
-
-                <Shimmer type="title" />
-                <Shimmer type="info" />
-                <Shimmer type="overview" />
-            </motion.div>
-        );
-    }
 
     return (
         <motion.div 

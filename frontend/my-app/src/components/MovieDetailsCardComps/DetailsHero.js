@@ -9,6 +9,7 @@ export default function DetailsHero({ details, mediaType, isFullPage }) {
     const [trailer, setTrailer] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audio, setAudio] = useState(1);
+    const [imageLoaded, setImageLoaded] = useState(false);
     const [movieTitle, setMovieTitle] = useState(null);
     const [videoProgress, setVideoProgress] = useState(0);
     const videoRef = useRef(null);
@@ -16,6 +17,21 @@ export default function DetailsHero({ details, mediaType, isFullPage }) {
     const backdropUrl = `${baseImgUrl}${details?.backdrop_path}`;
     const posterUrl = `${baseImgUrl}${details?.poster_path}`;
     const API_KEY = process.env.REACT_APP_API_KEY;
+
+    const shimmerStyles = `
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .shimmer-animation {
+            animation: shimmer 2s infinite linear;
+        }
+    `;
 
     useEffect(() => {
     async function fetchTrailer() {
@@ -152,58 +168,67 @@ export default function DetailsHero({ details, mediaType, isFullPage }) {
 
 
     useEffect(() => {
-        async function fetchMovieLogo() {
-            try {
-                const imagesEndPoint = mediaType === "movie" ? `movie/${details.id}/images` : `tv/${details.id}/images`;
-                
-                const imagesResponse = await tmdbAxios.get(imagesEndPoint, {
-                    params: {
-                        api_key: API_KEY,
-                        include_image_language: 'en,null'
-                    }
-                });
-
-                const logos = imagesResponse.data.logos;
-                if (logos && logos.length > 0) {
-                    const filteredLogos = logos
-                        .filter(logo => logo.aspect_ratio >= 1.5 && logo.aspect_ratio <= 4)
-                        .filter(logo => logo.width >= 400 && logo.height >= 100)
-                        .sort((a, b) => {
-                            const getScore = (logo) => {
-                                let score = 0;                                
-                                score += logo.vote_average * 10;                   
-                                score += Math.min(logo.width, 1000) / 100;                            
-                                const idealAspectRatio = 2.5;
-                                score -= Math.abs(logo.aspect_ratio - idealAspectRatio) * 5;
-                                return score;
-                            };
-
-                            return getScore(b) - getScore(a);
-                        });
-
-                    if (filteredLogos.length > 0) {
-                        const bestLogo = filteredLogos[0];
-                        const logoPath = `https://image.tmdb.org/t/p/original${bestLogo.file_path}`;
-                        setMovieTitle(logoPath);
-                    } else {
-                        const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}`;
-                        setMovieTitle(fallbackLogo);
-                    }
-                } else {
-                    const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}`;
-                    setMovieTitle(fallbackLogo);
+    async function fetchMovieLogo() {
+        try {
+            const imagesEndPoint = mediaType === "movie" ? `movie/${details.id}/images` : `tv/${details.id}/images`;
+            
+            const imagesResponse = await tmdbAxios.get(imagesEndPoint, {
+                params: {
+                    api_key: API_KEY,
+                    include_image_language: 'en,null', // You can extend this to include more languages if needed
                 }
-            } catch (error) {
-                console.error("Error fetching movie logo:", error);
-                const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}`;
-                setMovieTitle(fallbackLogo);
-            }
-        }
+            });
 
-        if (details?.id) {
-            fetchMovieLogo();
+            const logos = imagesResponse.data.logos;
+            let logoPath = null;
+
+            if (logos && logos.length > 0) {
+                // Prioritize logos based on quality and aspect ratio
+                const filteredLogos = logos
+                    .filter(logo => logo.aspect_ratio >= 1.5 && logo.aspect_ratio <= 4)
+                    .filter(logo => logo.width >= 400 && logo.height >= 100)
+                    .sort((a, b) => {
+                        const getScore = (logo) => {
+                            let score = 0;
+                            score += logo.vote_average ? logo.vote_average * 10 : 0; // Use vote_average if available
+                            score += Math.min(logo.width, 1000) / 100; // Higher width gets more score
+                            const idealAspectRatio = 2.5;
+                            score -= Math.abs(logo.aspect_ratio - idealAspectRatio) * 5; // Closer to ideal aspect ratio gets more score
+                            return score;
+                        };
+
+                        return getScore(b) - getScore(a);
+                    });
+
+                if (filteredLogos.length > 0) {
+                    const bestLogo = filteredLogos[0];
+                    logoPath = `https://image.tmdb.org/t/p/original${bestLogo.file_path}`;
+                } else {
+                    console.warn("No suitable logos found.");
+                }
+            } else {
+                console.warn("No logos found.");
+            }
+
+            // If no logos were found, fall back to the poster
+            if (!logoPath) {
+                const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}` || 'path/to/placeholder/image.png';
+                logoPath = fallbackLogo;
+            }
+
+            setMovieTitle(logoPath);
+        } catch (error) {
+            console.error("Error fetching movie logo:", error);
+            // Provide a default logo or a placeholder image if available
+            const fallbackLogo = `https://image.tmdb.org/t/p/w500/${details?.poster_path}` || 'path/to/placeholder/image.png';
+            setMovieTitle(fallbackLogo);
         }
-    }, [details?.id, mediaType, API_KEY]);
+    }
+
+    if (details?.id) {
+        fetchMovieLogo();
+    }
+}, [details?.id, mediaType, API_KEY]);
 
     useEffect(() => {
         const autoPlayTimer = setTimeout(() => {
@@ -292,9 +317,9 @@ export default function DetailsHero({ details, mediaType, isFullPage }) {
             {movieTitle && (
                 <div className={`absolute ${
                     isFullPage 
-                        ? 'bottom-8 left-6 md:bottom-12 md:left-10 lg:bottom-16 lg:left-14'
+                        ? 'bottom-5 left-6 md:bottom-12 md:left-10 lg:bottom-16 lg:left-14'
                         : 'bottom-4 left-4 md:bottom-6 md:left-6 lg:bottom-8 lg:left-8'
-                    } w-[130px] md:w-[160px] lg:w-[200px] max-w-[220px]`}>
+                    } w-[90px] md:w-[160px] lg:w-[200px] max-w-[220px]`}>
                     <img 
                         src={movieTitle} 
                         alt="Movie Logo"
