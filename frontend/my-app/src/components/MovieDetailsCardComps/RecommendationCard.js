@@ -14,7 +14,7 @@ export default function RecommendationCard({
             <img 
                 src={poster} 
                 alt={`${title} poster`} 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
             />
             <div className="p-4 flex flex-col">
                 <div className="flex flex-row items-center mb-2">

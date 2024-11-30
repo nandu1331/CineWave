@@ -230,7 +230,7 @@ export default function DetailsHero({ details, mediaType, isFullPage }) {
         <div className={`relative w-[100%] overflow-hidden ${
             isFullPage 
                 ? "h-[30vh] md:h-[70vh] lg:h-[80vh]" 
-                : "h-[45vh] md:h-[50vh] lg:h-[55vh]"
+                : "h-[30vh] md:h-[40vh] lg:h-[50vh]"
         }`}>
             <AnimatePresence initial={false}>
                 {!isPlaying && (
@@ -305,10 +305,10 @@ export default function DetailsHero({ details, mediaType, isFullPage }) {
             )}
 
             {/* Volume Control Button */}
-            <div className={`absolute ${
+            <div className={`absolute flex flex-row items-center justify-between gap-3 ${
                 isFullPage 
-                    ? 'bottom-5 right-16 md:bottom-16 md:right-20 lg:bottom-12 lg:right-20'
-                    : 'bottom-4 right-4 md:bottom-6 md:right-6 lg:bottom-10 lg:right-20'
+                    ? 'bottom-5 right-0 lg:bottom-16'
+                    : 'bottom-4 right-0 lg:bottom-8'
                 } z-10`}>
                 <FontAwesomeIcon 
                     icon={audio ? faVolumeHigh : faVolumeOff} 
@@ -317,17 +317,14 @@ export default function DetailsHero({ details, mediaType, isFullPage }) {
                              transition-all duration-300 hover:scale-110
                              text-white hover:text-red-600"
                 />
-            </div>
-            {/* Age Rating Badge */}
-            <div className={`absolute ${
-                isFullPage
-                    ? 'top-[75%] md:top-[80%] lg:top-[85%]'
-                    : 'top-[70%] md:top-[75%] lg:top-[80%]'
-                } right-0 bg-black/40 backdrop-blur-sm border-l-4 border-white
-                px-3 py-2 rounded-l-lg transition-all duration-300 hover:bg-black/60`}>
+                {/* Age Rating Badge */}
+                <div className={`right-0 bg-black/40 backdrop-blur-sm border-l-4 border-white
+                    px-3 py-2 rounded-l-lg transition-all duration-300 hover:bg-black/60`}
+                >
                 <h1 className="text-base md:text-lg font-semibold">
                     {details?.adult ? '18+' : 'Any'}
                 </h1>
+            </div>
             </div>
         </div>
     );
