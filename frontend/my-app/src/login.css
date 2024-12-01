@@ -51,7 +51,7 @@
   color: #e50914;
 }
 
-button {
+/* button {
   width: 100%;
   padding: 16px;
   background-color: #e50914;
@@ -71,7 +71,7 @@ button:hover {
 
 button:active {
   transform: scale(0.98);
-}
+} */
 
 .error-message {
   color: #e87c03;

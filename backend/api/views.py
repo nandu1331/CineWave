@@ -81,14 +81,14 @@ def get_movie_list(request):
 def add_to_list(request):
     movie_data = {
         'user': request.user.id,
-        'item_id': request.data.get('movie_id'),
+        'item_id': request.data.get('item_id'),
         'title': request.data.get('title'),
         'poster_path': request.data.get('poster_path'),
         'media_type' : request.data.get('media_type')
     }
     
     try:
-        movie = MovieList.objects.get(user=request.user, movie_id=movie_data['movie_id'])
+        movie = MovieList.objects.get(user=request.user, item_id=movie_data['item_id'])
         return Response({'message': 'Movie already in list'}, status=status.HTTP_400_BAD_REQUEST)
     except MovieList.DoesNotExist:
         serializer = MovieListSerializer(data=movie_data)

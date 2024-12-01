@@ -24,7 +24,7 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
                 try {
                     const response = await djangoAxios.get('mylist/');
                     const isMovieInList = response.data.some(item => 
-                        item.movie_id === details.id
+                        item.item_id === details.id
                     );
                     setIsInList(isMovieInList);
                 } catch (error) {
@@ -49,7 +49,7 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
             } else {
                 // Add to list
                 const movieData = {
-                    movie_id: details.id,
+                    item_id: details.id,
                     title: details.title || details.name,
                     poster_path: details.poster_path,
                     media_type: mediaType
@@ -70,8 +70,8 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
     };
 
     const listButtonClasses = `
-        flex items-center gap-2 px-4 py-2 rounded-md
-        transition-all duration-300
+        text-center gap-2 px-4 py-2 rounded-md
+        transition-all duration-300 w-full
         ${isInList 
             ? 'bg-gray-700 hover:bg-gray-600' 
             : 'bg-white text-black hover:bg-gray-200'}
@@ -133,8 +133,8 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
         >
             
             <div className="flex gap-4 mt-4 lg:gap-12">
-                <button className='flex items-center gap-2 px-4 py-2 rounded-md
-                                    transition-all duration-300 bg-white text-black hover:bg-gray-200'
+                <button className={`bg-white text-black hover:bg-gray-200 gap-2 px-4 py-2 rounded-md text-center
+                                    transition-all duration-300 w-full`}
                 >
                     Play
                 </button>
@@ -147,7 +147,7 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
                         icon={isInList ? faCheck : faPlus} 
                         className={isAddingToList ? 'animate-spin' : ''}
                     />
-                    {isInList ? 'Remove from List' : 'Add to List'}
+                    {isInList ? '   Remove from List' : '   Add to List'}
                 </button>
                 {/* Your other button */}
             </div>

@@ -1,52 +1,102 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, Suspense, memo } from "react";
+import PropTypes from 'prop-types';
 import { tmdbAxios } from "../../axios";
-import DetailsHero from "./DetailsHero";
-import DetailsBody from "./MovieDetailsBody";
 import { useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Shimmer Component for Hero
-const HeroShimmer = ({ isFullPage }) => {
+// Lazy load components
+const DetailsHero = React.lazy(() => import("./DetailsHero"));
+const DetailsBody = React.lazy(() => import("./MovieDetailsBody"));
+
+// Shimmer Components remain mostly the same but with added animations
+const HeroShimmer = memo(({ isFullPage }) => {
     const containerClasses = isFullPage 
         ? "w-full h-[500px]" 
         : "w-full h-[400px]";
 
     return (
-        <div className={`${containerClasses} bg-neutral-800 animate-pulse`}>
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={`${containerClasses} bg-neutral-800 animate-pulse relative overflow-hidden`}
+        >
             <div className="absolute inset-0 bg-gradient-to-r from-neutral-700 via-neutral-600 to-neutral-700 shimmer"></div>
-        </div>
+        </motion.div>
     );
-};
+});
 
-// Shimmer Component for Body
-const BodyShimmer = ({ isFullPage }) => {
+const BodyShimmer = memo(({ isFullPage }) => {
     return (
-        <div className="p-4 space-y-4">
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-4 space-y-4"
+        >
             {[1, 2, 3, 4].map((item) => (
                 <div 
                     key={item} 
-                    className="w-full h-20 bg-neutral-800 animate-pulse rounded-md"
+                    className="w-full h-20 bg-neutral-800 animate-pulse rounded-md relative overflow-hidden"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-neutral-700 via-neutral-600 to-neutral-700 shimmer"></div>
                 </div>
             ))}
-        </div>
+        </motion.div>
     );
-};
+});
 
-export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
-    const [movieDetails, setMovieDetails] = useState({});
+const MovieDetailsCard = ({ movieId, onClose, mediaType }) => {
+    const [movieDetails, setMovieDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const params = useParams();
     
     // Use either props or params, with props taking precedence
     const activeId = movieId || params?.id;
     const activeMediaType = mediaType || params?.media_type;
-    
-    // Determine if component should render in full-page mode
     const isFullPage = !movieId && params?.id;
 
+    // Memoized fetch function
+    const fetchDetails = useCallback(async () => {
+        if (!activeId) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            // Check cache first
+            const cacheKey = `movie_details_${activeId}_${activeMediaType}`;
+            const cachedData = sessionStorage.getItem(cacheKey);
+            
+            if (cachedData) {
+                setMovieDetails(JSON.parse(cachedData));
+                setIsLoading(false);
+                return;
+            }
+
+            const mediaTypeFormatted = activeMediaType?.toLowerCase();
+            const endpoint = mediaTypeFormatted === 'movie' ? 'movie' : 'tv';
+            
+            const response = await tmdbAxios.get(`${endpoint}/${activeId}`);
+            const data = response.data;
+
+            // Cache the response
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+            setMovieDetails(data);
+        } catch (error) {
+            console.error("Error fetching details:", error);
+            setError("Failed to load content. Please try again later.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeId, activeMediaType]);
+
+    // Effect for fetching details
     useEffect(() => {
-        // Only control body overflow in modal mode
+        fetchDetails();
+    }, [fetchDetails]);
+
+    // Effect for body overflow
+    useEffect(() => {
         if (!isFullPage) {
             document.body.style.overflow = 'hidden';
             return () => {
@@ -55,91 +105,96 @@ export default function MovieDetailsCard({ movieId, onClose, mediaType }) {
         }
     }, [isFullPage]);
 
-    useEffect(() => {
-        const fetchDetails = async (id) => {
-            if (!id) return;
-
-            setIsLoading(true);
-            try {
-                let response;
-                const mediaTypeFormatted = activeMediaType?.toLowerCase();
-                const endpoint = mediaTypeFormatted === 'movie' ? 'movie' : 'tv';
-                
-                response = await tmdbAxios.get(`${endpoint}/${id}`);
-                setMovieDetails(response.data);
-            } catch (error) {
-                console.error("Error fetching details:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchDetails(activeId);
-    }, [activeId, activeMediaType]);
-
     if (!activeId || !activeMediaType) {
         return null;
     }
 
     const containerClassName = isFullPage
-        ? "min-h-screen bg-black w-[100%]" // Full page layout
-        : "fixed inset-0 pt-32 z-10 items-center text-white bg-black bg-opacity-80 justify-center overflow-y-auto"; // Modal layout
+        ? "min-h-screen bg-black w-[100%]"
+        : "fixed inset-0 pt-32 z-10 items-center text-white bg-black bg-opacity-80 justify-center overflow-y-auto";
 
     const contentClassName = isFullPage
-        ? "w-full max-w-full mx-auto px-3" // Full page content
-        : "relative w-11/12 md:w-9/12 lg:w-7/12 max-w-4xl mx-auto z-20 bg-neutral-900 rounded-lg shadow-2xl overflow-y-auto"; // Modal content
+        ? "w-full max-w-full mx-auto px-3"
+        : "relative w-11/12 md:w-9/12 lg:w-7/12 max-w-4xl mx-auto z-20 bg-neutral-900 rounded-lg shadow-2xl overflow-y-auto";
 
     return (
-        <div className={`${containerClassName} text-white`}>
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className={`${containerClassName} text-white`}
+        >
             <div className={`${contentClassName} text-white`}>
-                {!isFullPage && (
-                    <button 
-                        onClick={onClose}
-                        className="absolute top-0 right-2 z-50 
-                                 text-white hover:text-gray-300 
-                                 bg-neutral-800 rounded-full 
-                                 w-10 h-10 flex items-center justify-center"
+                <AnimatePresence>
+                    {!isFullPage && (
+                        <motion.button 
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                            onClick={onClose}
+                            className="absolute top-2 right-2 z-50 
+                                     text-white hover:text-gray-300 
+                                     bg-neutral-800 rounded-full 
+                                     w-10 h-10 flex items-center justify-center
+                                     transition-all duration-300 hover:bg-neutral-700"
+                        >
+                            ✕
+                        </motion.button>
+                    )}
+                </AnimatePresence>
+
+                {error ? (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="p-4 text-center"
                     >
-                        ✕
-                    </button>
-                )}
-                
-                {isLoading ? (
-                    <>
-                        <HeroShimmer isFullPage={isFullPage} />
-                        <BodyShimmer isFullPage={isFullPage} />
-                    </>
+                        <div className="text-red-500 mb-4">{error}</div>
+                        <button 
+                            onClick={fetchDetails}
+                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700
+                                     transition-colors duration-300"
+                        >
+                            Try Again
+                        </button>
+                    </motion.div>
                 ) : (
-                    <>
-                        <DetailsHero 
-                            details={movieDetails} 
-                            mediaType={activeMediaType?.toLowerCase() === 'movie' ? 'movie' : 'tv'}
-                            isFullPage={isFullPage}
-                        />
-                        <DetailsBody 
-                            details={movieDetails} 
-                            mediaType={activeMediaType?.toLowerCase() === 'movie' ? 'movie' : 'tv'}
-                            isFullPage={isFullPage}
-                        />
-                    </>
+                    <Suspense fallback={
+                        <>
+                            <HeroShimmer isFullPage={isFullPage} />
+                            <BodyShimmer isFullPage={isFullPage} />
+                        </>
+                    }>
+                        {isLoading ? (
+                            <>
+                                <HeroShimmer isFullPage={isFullPage} />
+                                <BodyShimmer isFullPage={isFullPage} />
+                            </>
+                        ) : (
+                            <>
+                                <DetailsHero 
+                                    details={movieDetails} 
+                                    mediaType={activeMediaType === 'movie' ? 'movie' : 'tv'}
+                                    isFullPage={isFullPage}
+                                />
+                                <DetailsBody 
+                                    details={movieDetails} 
+                                    mediaType={activeMediaType?.toLowerCase() === 'movie' ? 'movie' : 'tv'}
+                                    isFullPage={isFullPage}
+                                />
+                            </>
+                        )}
+                    </Suspense>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
-}
+};
 
-// // Add this to your global CSS or Tailwind config
-// const shimmerStyles = `
-//     @keyframes shimmer {
-//         0% {
-//             transform: translateX(-100%);
-//         }
-//         100% {
-//             transform: translateX(100%);
-//         }
-//     }
+MovieDetailsCard.propTypes = {
+    movieId: PropTypes.string,
+    onClose: PropTypes.func,
+    mediaType: PropTypes.oneOf(['movie', 'tv', 'MOVIE', 'TV']),
+};
 
-//     .shimmer {
-//         animation: shimmer 1.5s infinite linear;
-//     }
-// `;
+export default memo(MovieDetailsCard);

@@ -169,14 +169,14 @@ export default function Navbar() {
                         {!isLoading && (
                             <div className="flex items-center space-x-4">
                                 <span className="text-white">{username}</span>
-                                <motion.div
+                                <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={handleLogout}
                                     className="text-white text-4xl hover:text-red-500 transition-colors"
                                 >
                                     <FontAwesomeIcon icon={faSignOut} />
-                                </motion.div>
+                                </motion.button>
                             </div>
                         )}
                     </div>

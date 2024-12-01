@@ -333,7 +333,7 @@ export default function Banner({ media_type = 'Movie' }) {
             {/* Volume Control Button - Only visible on large screens */}
             {isLargeScreen && (
                 <div 
-                    className="absolute bottom-[16px] right-[100px] lg:bottom-[110px] lg:right-[120px] z-30"
+                    className="absolute bottom-[16px] right-[100px] lg:bottom-[110px] lg:right-[115px] z-30"
                     onClick={(e) => {
                         e.stopPropagation();
                         setAudio(prev => !prev);

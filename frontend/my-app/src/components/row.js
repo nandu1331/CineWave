@@ -164,7 +164,7 @@ export default function Row(props) {
                     <MovieDetailsCard
                     movieId={selectedMovie.id}
                     onClose={closeModal}
-                    mediaType={props.media_type || selectedMovie.media_type}
+                    mediaType={selectedMovie.media_type}
                 />
                 </div>
                 
