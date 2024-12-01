@@ -81,9 +81,10 @@ def get_movie_list(request):
 def add_to_list(request):
     movie_data = {
         'user': request.user.id,
-        'movie_id': request.data.get('movie_id'),
+        'item_id': request.data.get('movie_id'),
         'title': request.data.get('title'),
-        'poster_path': request.data.get('poster_path')
+        'poster_path': request.data.get('poster_path'),
+        'media_type' : request.data.get('media_type')
     }
     
     try:
@@ -98,10 +99,10 @@ def add_to_list(request):
     
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def remove_from_list(request, movie_id):
+def remove_from_list(request, item_id):
     try:
-        movie = MovieList.objects.get(user=request.user, movie_id=movie_id)
-        movie.delete()
+        item = MovieList.objects.get(user=request.user, item_id=item_id)
+        item.delete()
         return Response({'message': 'Movie removed from list'}, status=status.HTTP_200_OK)
     except MovieList.DoesNotExist:
         return Response({'message': 'Movie not found in list'}, status=status.HTTP_404_NOT_FOUND)

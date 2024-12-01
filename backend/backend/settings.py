@@ -14,6 +14,11 @@ from pathlib import Path
 import os
 import dj_database_url
 
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,17 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-mq+n@zm6nx0e2nw*^vgprn6^t#pgbq8t0f&jg5454!c8e3g6eu'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = [
-    '.vercel.app',
-    'localhost',
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
+SECRET_KEY = env('SECRET_KEY')
 
 # Application definition
 
@@ -84,11 +85,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-import environ
-
-# If using django-environ
-env = environ.Env()
-environ.Env.read_env()  # Load .env file
+  
 
 DATABASES = {
     'default': dj_database_url.config(
@@ -141,11 +138,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "https://cine-wave-livid.vercel.app",
-    "http://localhost:3000"
-    "https://vercel.com/aizen-sosukes-projects/cine-wave/DSBMJspW5dgBvqMRmsvDjiXrMSeM"
-]
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
+    "http://localhost:3000",
+])
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -184,6 +179,6 @@ REST_FRAMEWORK = {
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False

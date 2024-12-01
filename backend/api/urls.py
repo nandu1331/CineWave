@@ -11,5 +11,5 @@ urlpatterns = [
     path('user/info/', views.get_user_info, name='user_info'),
     path('mylist/', views.get_movie_list, name='get_movie_list'),
     path('mylist/add/', views.add_to_list, name='add_to_list'),
-    path('mylist/remove/<int:movie_id>/', views.remove_from_list, name='remove_from_list'),
+    path('mylist/remove/<int:item_id>/', views.remove_from_list, name='remove_from_list'),
 ]

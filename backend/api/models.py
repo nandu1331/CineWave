@@ -4,10 +4,11 @@ from django.contrib.auth.models import User
 
 class MovieList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    movie_id = models.IntegerField()
+    item_id = models.IntegerField()
     title = models.CharField(max_length=200)
     poster_path = models.CharField(max_length=200)
     added_date = models.DateTimeField(auto_now_add=True)
+    media_type = models.CharField(max_length=100, null=True)
     
     class Meta:
-        unique_together = ('user', 'movie_id')
+        unique_together = ('user', 'item_id')
