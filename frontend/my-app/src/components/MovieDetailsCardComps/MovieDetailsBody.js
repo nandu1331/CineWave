@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faCalendar, faClock, faPlus, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faCalendar, faClock, faPlus, faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { tmdbAxios } from "../../axios";
 import { djangoAxios } from "../../axios";
 import RecommendationCard from "./RecommendationCard";
@@ -37,37 +37,38 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
 
     }, [details?.id]);
 
-     const handleListAction = async () => {
+    const handleListAction = async () => {
         if (!details?.id) return;
 
+        // Optimistically update UI
+        const previousState = isInList;
+        setIsInList(!isInList); // Toggle list state
         setIsAddingToList(true);
+
         try {
-            if (isInList) {
+            if (previousState) {
                 // Remove from list
                 await djangoAxios.delete(`mylist/remove/${details.id}/`);
-                setIsInList(false);
             } else {
                 // Add to list
                 const movieData = {
                     item_id: details.id,
                     title: details.title || details.name,
                     poster_path: details.poster_path,
-                    media_type: mediaType
+                    media_type: mediaType,
                 };
                 await djangoAxios.post('mylist/add/', movieData);
-                setIsInList(true);
             }
         } catch (error) {
-            if (error.response?.data?.non_field_errors?.[0].includes('unique set')) {
-                // Item already in list
-                setIsInList(true);
-            } else {
-                console.error('Error updating list:', error);
-            }
+            // Roll back state on error
+            setIsInList(previousState);
+            console.error('Error updating list:', error);
+            alert('Failed to update list. Please try again.'); // Optional error notification
         } finally {
             setIsAddingToList(false);
         }
     };
+
 
     const listButtonClasses = `
         text-center gap-2 px-4 py-2 rounded-md
@@ -141,14 +142,18 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
                 <button
                     onClick={handleListAction}
                     disabled={isAddingToList}
-                    className={listButtonClasses}
+                    className={`text-center gap-2 px-4 py-2 rounded-md transition-all duration-300 w-full items-center ${
+                        isInList ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white text-black hover:bg-gray-200'
+                    }`}
                 >
-                    <FontAwesomeIcon 
-                        icon={isInList ? faCheck : faPlus} 
-                        className={isAddingToList ? 'animate-spin' : ''}
-                    />
-                    {isInList ? '   Remove from List' : '   Add to List'}
+                    {isAddingToList ? (
+                        <FontAwesomeIcon icon={faSpinner} spin className="animate-spin mr-2" />
+                    ) : (
+                        <FontAwesomeIcon icon={isInList ? faCheck : faPlus} className="mr-1"/>
+                    )}
+                    {isAddingToList ? 'Processing...' : isInList ? '  Remove from List' : '  Add to List'}
                 </button>
+
                 {/* Your other button */}
             </div>
 
@@ -251,7 +256,7 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
             {/* Recommendations Grid */}
             <motion.div 
                 variants={containerVariants}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-4 lg:gap-6"
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-4 lg:gap-6"
             >
                 <AnimatePresence>
                     {recommendations?.slice(0, 9).map((item, index) => (

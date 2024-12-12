@@ -90,9 +90,12 @@ export default function SeasonDetails({ id }) {
                         Episodes
                     </motion.h1>
                     <motion.select
-                        className="bg-neutral-900/95 px-4 py-2 w-full max-w-fit border-white/20 border-2 rounded-md
-                                 hover:border-white/40 transition-all duration-300 cursor-pointer
-                                 focus:outline-none focus:border-white/60"
+                        className="bg-gradient-to-r from-neutral-800 via-neutral-900 to-black px-4 py-2 w-full max-w-fit 
+                                   border-2 border-neutral-700 rounded-lg shadow-md
+                                   text-white text-sm font-medium tracking-wide cursor-pointer
+                                   hover:border-neutral-500 hover:shadow-lg hover:shadow-neutral-700/50
+                                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-neutral-500 
+                                   transition-all duration-300 ease-in-out"
                         onChange={(e) => setSelectedSeason(parseInt(e.target.value))}
                         value={selectedSeason}
                         initial={{ opacity: 0, x: 20 }}
@@ -103,11 +106,13 @@ export default function SeasonDetails({ id }) {
                             <option 
                                 key={season.id} 
                                 value={season.season_number}
+                                className="bg-neutral-900 text-white hover:bg-neutral-700"
                             >
                                 {season.name} ({season.episode_count} Episodes)
                             </option>
                         ))}
                     </motion.select>
+
                 </div>
                 <AnimatePresence mode="wait">
                     <EpisodeDetails 

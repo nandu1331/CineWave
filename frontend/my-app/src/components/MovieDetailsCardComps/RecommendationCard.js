@@ -10,11 +10,11 @@ export default function RecommendationCard({
     overview,
 }) {
     return (
-        <div className="flex flex-col bg-neutral-800 h-full rounded-lg overflow-hidden shadow-md transition-transform transform hover:scale-[101%]">
+        <div className="flex flex-col bg-neutral-800 h-200px rounded-lg overflow-hidden shadow-md transition-transform transform hover:scale-[101%]">
             <img 
                 src={poster} 
                 alt={`${title} poster`} 
-                className="w-full h-full object-contain"
+                className="w-full h-100px object-contain"
             />
             <div className="p-4 flex flex-col">
                 <div className="flex flex-row items-center mb-2">

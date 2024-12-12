@@ -196,7 +196,12 @@ export default function App() {
                     />
                     <Route
                         path="/:media_type/:id" 
-                        element={<MovieDetailsCard />}
+                        element={
+                            <div>
+                                <Navbar />
+                                <MovieDetailsCard />
+                            </div>
+                        }
                     />
                 </Routes>
             </AnimatePresence>

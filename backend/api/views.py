@@ -1,19 +1,15 @@
 # backend/api/views.py
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-class TestView(APIView):
-    def get(self, request):
-        return Response({"message": "API is working!"}, status=status.HTTP_200_OK)
-
-# backend/api/views.py
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+
+class TestView(APIView):
+    def get(self, request):
+        return Response({"message": "API is working!"}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -65,6 +61,51 @@ def get_user_info(request):
         'email': user.email,
         'id': user.id,
     })
+
+from .models import Profile
+from .serializers import ProfileSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_profiles(request):
+    profiles = Profile.objects.filter(user=request.user)
+    serializer = ProfileSerializer(profiles, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_profile(request):
+    data = request.data
+    data['user'] = request.user.id
+    serializer = ProfileSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_profile(request, profile_id):
+    try:
+        profile = Profile.objects.get(id=profile_id, user=request.user)
+    except Profile.DoesNotExist:
+        return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = ProfileSerializer(Profile, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_profile(request, profile_id):
+    try:
+        profile = Profile.objects.get(id=profile_id, user=request.user)
+        profile.delete()
+        return Response({"message": "Profile deleted successfully"}, status=status.HTTP_200_OK)
+    except Profile.DoesNotExist:
+        return Response({"error": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 from .models import MovieList
