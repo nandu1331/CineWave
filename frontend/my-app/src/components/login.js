@@ -51,18 +51,19 @@ export default function Login() {
             const response = await djangoAxios.post('token/', credentials);
             
             // If login successful
-            setLoginState({ loading: false, success: true, error: null });
+            // setLoginState({ loading: false, success: true, error: null });
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
 
+            navigate('/select-profile');
             // Start preloading home components
-            setIsPreloading(true);
-            await preloadHomeComponents();
+            // setIsPreloading(true);
+            // await preloadHomeComponents();
 
-            // Navigate to home after a brief delay
-            setTimeout(() => {
-                navigate('/');
-            }, 4000);
+            // // Navigate to home after a brief delay
+            // setTimeout(() => {
+            //     
+            // }, 4000);
 
         } catch (error) {
             setLoginState({

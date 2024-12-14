@@ -54,26 +54,42 @@ export default function MyList() {
         fetchMyList();
     }, []);
 
-    const fetchMyList = async () => {
-        try {
-            const response = await djangoAxios.get('mylist/');
-            setMyList(response.data);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching mylist:', error);
-            setError('Failed to fetch your list');
-            setLoading(false);
-        }
-    };
+    // frontend/my-app/src/components/MyList.js
+// Update the fetchMyList and removeFromList functions:
 
-    const removeFromList = async (itemId) => {
-        try {
-            await djangoAxios.delete(`mylist/remove/${itemId}/`);
-            setMyList(myList.filter(item => item.item_id !== itemId));
-        } catch (error) {
-            console.error('Error removing item from list:', error);
+const fetchMyList = async () => {
+    try {
+        const currentProfileId = localStorage.getItem('currentProfileId');
+        if (!currentProfileId) {
+            setError('No profile selected');
+            setLoading(false);
+            return;
         }
-    };
+
+        const response = await djangoAxios.get(`mylist/?profile_id=${currentProfileId}`);
+        setMyList(response.data);
+        setLoading(false);
+    } catch (error) {
+        console.error('Error fetching mylist:', error);
+        setError('Failed to fetch your list');
+        setLoading(false);
+    }
+};
+
+const removeFromList = async (itemId) => {
+    try {
+        const currentProfileId = localStorage.getItem('currentProfileId');
+        if (!currentProfileId) {
+            setError('No profile selected');
+            return;
+        }
+
+        await djangoAxios.delete(`mylist/remove/${itemId}/?profile_id=${currentProfileId}`);
+        setMyList(myList.filter(item => item.item_id !== itemId));
+    } catch (error) {
+        console.error('Error removing item from list:', error);
+    }
+};
 
     if (loading) return <LoadingSkeleton />;
     

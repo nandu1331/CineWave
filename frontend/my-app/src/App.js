@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Login from './components/login';
@@ -12,11 +12,14 @@ import MyList from './components/MyList';
 import ShimmerBanner from './components/shimmerComps/shimmerBanner';
 import SearchResults from './components/SearchResults';
 import MovieDetailsCard from './components/MovieDetailsCardComps/DetailsCard';
+import ManageProfiles from './components/ProfileManagement/ManageProfiles';
+import ProfileSelection from './components/ProfileManagement/ProfileSelection';
+import SuccessScreen from './components/ProfileManagement/SuccessAnimation';
+import useProfiles from './hooks/useProfiles';
 
 // Create a separate component for category content
 const CategoryContent = ({ category }) => {
     const [isLoading, setIsLoading] = useState(true);
-    
 
     useEffect(() => {
         setIsLoading(true);
@@ -132,12 +135,62 @@ const MainLayout = ({ category }) => (
     </motion.div>
 );
 
-export default function App() {
+const AppContent = () => {
+    const [isPreloading, setIsPreloading] = useState(true);
+    const { profiles, isLoading } = useProfiles();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if user is logged in and has selected profile
+        const accessToken = localStorage.getItem('access_token');
+        const currentProfileId = localStorage.getItem('currentProfileId');
+        
+        if (accessToken) {
+            // If logged in but no profile selected, redirect to profile selection
+            if (!currentProfileId && !isLoading && profiles.length > 0) {
+                navigate('/select-profile');
+                setIsPreloading(false);
+            }
+            // Simulate preloading
+            setTimeout(() => {
+                setIsPreloading(false);
+            }, 2000);
+        } else {
+            setIsPreloading(false);
+        }
+    }, [navigate]);
+
+    const getCurrentProfile = () => {
+        const currentProfileId = localStorage.getItem('currentProfileId');
+        if (!currentProfileId || isLoading || !profiles.length) return null;
+        return profiles.find(p => p.id === parseInt(currentProfileId)) || null;
+    };
+
+    const currentProfile = getCurrentProfile();
+
     return (
-        <Router>
-            <AnimatePresence mode="wait">
-                <Routes>
-                    <Route path="/login" element={
+        <AnimatePresence mode="wait">
+            <div className='relative'>
+                <AnimatePresence>
+                    {isPreloading && currentProfile && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+                        >
+                            <SuccessScreen selectedProfile={currentProfile} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isPreloading ? 0 : 1 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Routes>
+                        <Route path="/login" element={
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -157,6 +210,23 @@ export default function App() {
                             <Register />
                         </motion.div>
                     } />
+                    <Route 
+                        path="/manage-profiles" 
+                        element={
+                            <ProtectedRoute>
+                                <ManageProfiles />
+                            </ProtectedRoute>
+                        } 
+                    />
+                    <Route 
+                        path="/select-profile" 
+                        element={
+                            <ProtectedRoute>
+                                <ProfileSelection />
+                            </ProtectedRoute>
+                        } 
+                    />
+
                     <Route path="/" element={
                         <ProtectedRoute>
                             <MainLayout />
@@ -203,8 +273,17 @@ export default function App() {
                             </div>
                         }
                     />
-                </Routes>
-            </AnimatePresence>
+                    </Routes>
+                </motion.div>
+            </div>
+        </AnimatePresence>
+    );
+};
+
+export default function App() {
+    return (
+        <Router>
+            <AppContent />
         </Router>
     );
 }

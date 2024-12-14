@@ -18,56 +18,67 @@ export default function DetailsBody({ details, mediaType, isFullPage }) {
         window.scrollTo(0, 0);
     }, [details]);
     
-    useEffect(() => {
-        const checkIfInList = async () => {
-            if (details?.id) {
-                try {
-                    const response = await djangoAxios.get('mylist/');
-                    const isMovieInList = response.data.some(item => 
-                        item.item_id === details.id
-                    );
-                    setIsInList(isMovieInList);
-                } catch (error) {
-                    console.error('Error checking list status:', error);
-                }
+    // In DetailsBody component, update these functions:
+
+useEffect(() => {
+    const checkIfInList = async () => {
+        if (details?.id) {
+            try {
+                const currentProfileId = localStorage.getItem('currentProfileId');
+                if (!currentProfileId) return;
+
+                const response = await djangoAxios.get(`mylist/?profile_id=${currentProfileId}`);
+                const isMovieInList = response.data.some(item => 
+                    item.item_id === details.id
+                );
+                setIsInList(isMovieInList);
+            } catch (error) {
+                console.error('Error checking list status:', error);
             }
-        };
-        
-        checkIfInList();
-
-    }, [details?.id]);
-
-    const handleListAction = async () => {
-        if (!details?.id) return;
-
-        // Optimistically update UI
-        const previousState = isInList;
-        setIsInList(!isInList); // Toggle list state
-        setIsAddingToList(true);
-
-        try {
-            if (previousState) {
-                // Remove from list
-                await djangoAxios.delete(`mylist/remove/${details.id}/`);
-            } else {
-                // Add to list
-                const movieData = {
-                    item_id: details.id,
-                    title: details.title || details.name,
-                    poster_path: details.poster_path,
-                    media_type: mediaType,
-                };
-                await djangoAxios.post('mylist/add/', movieData);
-            }
-        } catch (error) {
-            // Roll back state on error
-            setIsInList(previousState);
-            console.error('Error updating list:', error);
-            alert('Failed to update list. Please try again.'); // Optional error notification
-        } finally {
-            setIsAddingToList(false);
         }
     };
+    
+    checkIfInList();
+}, [details?.id]);
+
+const handleListAction = async () => {
+    if (!details?.id) return;
+
+    const currentProfileId = localStorage.getItem('currentProfileId');
+    if (!currentProfileId) {
+        alert('Please select a profile first');
+        return;
+    }
+
+    // Optimistically update UI
+    const previousState = isInList;
+    setIsInList(!isInList);
+    setIsAddingToList(true);
+
+    try {
+        if (previousState) {
+            // Remove from list
+            await djangoAxios.delete(`mylist/remove/${details.id}/?profile_id=${currentProfileId}`);
+        } else {
+            // Add to list
+            const movieData = {
+                profile_id: currentProfileId,
+                item_id: details.id,
+                title: details.title || details.name,
+                poster_path: details.poster_path,
+                media_type: mediaType,
+            };
+            await djangoAxios.post('mylist/add/', movieData);
+        }
+    } catch (error) {
+        // Roll back state on error
+        setIsInList(previousState);
+        console.error('Error updating list:', error);
+        alert('Failed to update list. Please try again.');
+    } finally {
+        setIsAddingToList(false);
+    }
+};
 
 
     const listButtonClasses = `
